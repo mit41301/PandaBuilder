@@ -1,0 +1,1774 @@
+		     _________________________
+		    /			      \
+		   /   H  H  AA	  SSS  M   M   \
+		  /    H  H A  A S     MM MM	\
+		 /     HHHH AAAA  SSS  M M M	 \
+		 \     H  H A  A     S M   M	 /
+		  \    H  H A  A  SSS  M   M	/
+		   \___________________________/
+		    \_________________________/
+
+		       Anleitung / Referenz
+	     Tabellenkonfigurierbarer Makro-Assembler
+		     mit integriertem Linker
+	     (Zugeh”riger Simulator/Debugger -> HSIM)
+
+		      (c) Dipl.-Ing. H.P. Hohe
+			91332 Heiligenstadt
+			    Burggrub 28
+
+			   Januar, 1995
+			    Version 1.9
+
+	      Private Nutzung und Einsatz in der Lehre,
+	       sowie Nutzung zu Testzwecken gestattet
+	 Kommerzielle Nutzung nur mit Genehmigung des Autors
+
+
+Inhaltsverzeichnis:
+
+	1.  Einleitung
+	2.  Leistungsmerkmale des Assemblers
+	3.  Einrichten auf der Festplatte
+	4.  Kommandozeilenaufruf
+	5.  Datenstrukturen
+	6.  Filenamen
+	7.  Preprozessordirektiven
+	8.  Assemblerdirektiven
+	9.  Erstellen einer Assembler-Tabelle
+	10. HASM Eigenheiten fr spezielle Prozessoren
+	11. Formate des HEX-Ausgabefiles
+	12. Historie des Programms
+	13. Fehler des Programms
+
+
+
+1.Einleitung
+************
+
+    Ansatzpunkt fr die Entwicklung dieses Assemblers war es, ein
+    Werkzeug zu schaffen, mit dem es m”glich ist unterschiedlichste
+    Arten und Ausfhrungen von Prozessoren, Mikrokontroller und
+    Signalprozessoren zu programmieren ohne fr jeden Prozessor
+    einen eigenen Assembler anschaffen und erlernen zu mssen.
+    Speziell wenn man kurzfristig und flexibel auf andere Kontroller-
+    typen wechseln m”chte bringt dieser Ansatz Vorteile.
+    Man muá nicht fr jeden Prozessor die Eigenheiten eines anderen
+    Assemblers erlernen. Alle Anweisungen an den Assembler bleiben gleich.
+    Nur der Befehlssatz des jeweiligen Prozessors muá erlernt werden.
+    Die Anpassung des Assemblers an den jeweiligen Prozessor geschieht
+    dabei ber eine Tabelle, die es erlaubt den Assembler in sehr
+    weiten Bereichen zu konfigurieren. Diese Tabelle ist direkt lesbar.
+    Eine Dokumentation fr diese Tabelle ist vorhanden, so daá es
+    m”glich ist eigene Tabellen fr neue Prozessoren zu erstellen.
+
+    Besonderer Wert bei der Entwicklung des Assemblers wurde auf eine
+    leichte Portierbarkeit von Quellcode eines anderen Assemblers
+    auf diesen Assembler gelegt.
+
+    In der hier vorliegenden Anleitung zur Benutzung von HASM wird
+    nur auf Befehle eingegangen die direkt auf HASM einwirken und
+    fr alle untersttzten Prozessoren gleich sind.
+    (Prozessorspezifische Daten wie zum Beispiel der Befehlssatz des
+     jeweiligen Prozessors mssen den Herstellerdatenbchern entnommen
+     werden !)
+
+    Wenn Sie eigene Tabellen erstellt haben, so w„re es sch”n wenn Sie
+    diese auch anderen Programmierer zug„nglich machen wrden !
+    Einfachster Weg: schicken Sie sie an mich, ich werde sie dann
+		     zusammen mit der n„chsten Version des Programms
+		     weiterverbreiten !
+
+
+2.Leistungsmerkmale
+*******************
+
+  Fr den Anwender:
+    + Ein Assembler fr viele Prozessoren
+    + Assemblerdirektiven fr alle Prozessoren gleich
+    + Untersttzt alle wichtigen Preprozessor-Direktiven (Bed.Assemblierung)
+    + Volle Makrountersttzung mit lokalen Labels (Nicht nur ber #DEFINE !)
+    + Makro-Aufrufe mit Argumentmasken sind m”glich
+    + Untersttzt voll verschiebbare, segmentierte Programmierung
+    + Integrierter Linker kann automatisch oder separat verwendet werden
+    + Volle Untersttzung von lokalen Labels
+    + Fehlermeldungen mit Quellenangabe fr intelligenten Editor
+    + Punkt-Vor-Strich bei Ausdrcken
+    + Ausdrcke k”nnen Floatzahlen, Strings und Integerzahlen enthalten
+    + Steuerung des Linkvorganges durch ORG-Anweisung die auch
+      Formeln enthalten kann (Alignnachbildung !)
+    + Spezielle Befehle zur Generierung ganzer Wertetabellen
+    + Einbindung einzelner Module aus einer Library je nach Bedarf.
+    + Prozessoren die noch nicht untersttzt werden k”nnen vom
+      Anwender selbst integriert werden.
+    + Zugeh”riger Source-Level-Debugger/Simulator (-> HSIM !)
+
+  Fr neue Prozessoren:
+    + Die Befehle eines Prozessors k”nnen auf Bit-Ebene definiert werden
+    + Bedingungsabh„ngige Codel„nge fr Prozessorbefehle
+    + Konstanten fr den jeweiligen Prozessor direkt in der Tabelle m”glich
+    + Frei definierbare Operatoren fr den Assembler
+    + Physikalische und virtuelle Segmente k”nnen beliebig definiert werden
+    + Segment-Mapping ist bei allen Segmenten m”glich
+    + Nachbildung eines anderen Assembler m”glich -> Quellenbernahme einfach
+
+    Grenzen
+    ------------------------------------------------------
+    Maximall„nge fr Labels		       250 Zeichen
+    Maximal ansprechbarer Adressraum	       -> 32-Bit Zeiger
+    Maximale Anzahl geschachtelter Include     10
+    Maximale Source-Line L„nge		       250 Zeichen
+    Maximale Ausdruck-L„nge		       250 Zeichen
+    Maximale L„nge fr Pfadangaben	       79 Zeichen
+    Maximal Definierbare Maschinenbefehle      1000
+    Maximalspeicher fr Befehle 	       64 kB
+    Maximale Anzahl an Makroargumenten	       39
+    Maximale L„nge fr Segmentgruppennamen     19 Zeichen
+    Maximale Segmentzahl		       100
+    Maximale Verschachtelungstiefe bei Makros  5
+    Maximale L„nge von Zeichenkettenkonstanten 120 Bytes
+
+
+3.Einrichten auf der Festplatte
+*******************************
+
+    Verzeichnisstruktur:
+    --------------------
+      ..\ ____ HASM ________ TABELLEN
+		     \
+		      \_____ DOC
+		       \
+			\___ INIT
+			 \
+			  \_ ... (Beispiele)
+
+      Inhalt: HASM     - Hasm.exe
+
+	      DOC      - Hasm.doc
+		       - Schnell.doc
+
+	      TABELLEN - Z80.TAB
+		       - MCS-48.TAB
+		       - MCS-51.TAB
+		       - MCS-96.TAB
+		       - 80C552.TAB
+		       - 80C517.TAB
+		       - 80C166.TAB
+		       - u.s.w
+
+	      INIT     - Setup Support fr Editoren
+
+	      ...      - diverse Test und Beispielprogramme
+
+    Einfacher Aufruf: - Entweder den Pfad fr HASM.EXE mit in die
+    -----------------	'PATH' Umgebungsvariable aufnehmen oder
+		      - einen Batch mit vollst„ndigem Pfad.
+
+    Integration in die Workbench von Microsoft fr C/C++ 7.0
+    --------------------------------------------------------
+     - Inhalt der Datei 'MSC70.ini' in das File 'TOOLS.ini' der
+       Workbench importieren. Dabei die Tabelle fr den gewnschten
+       Prozessor gleich richtig einsetzen.
+     - Pfadangaben in diesem Abschnitt berprfen und n”tigenfalls
+       an die Gegebenheiten anpassen.
+     - Beim Installieren fr mehrere Prozessoren fr jeden Prozessor
+       einen Block in die Datei 'TOOLS.ini' einfgen.
+
+    Benutzen von Microsoft Windows 3.1 als Programmierumgebung
+    ----------------------------------------------------------
+     - Ohne groáen Aufwand ist es m”glich Windows 3.1 als einfache
+       Programmierumgebung zu verwenden.
+     - Zum EDITIEREN der Sourcefiles (Endung '.ASM') sollte im Dateimanager
+       eine Verknpfung zwischen der Endung '.ASM' und einem Texteditor
+       hergestellt werden. Wenn man mit einer maximalen Textgr”áe von
+       64 kByte auskommt, so kann man als Texteditor den mit Windows
+       mitgelieferten Editor 'Notepad.exe' verwenden.
+       Zum Einstellen der Verknpfung kann man im Dateinmanager eine
+       Datei mit der Endung '.ASM' markieren und dann im Datei-Men
+       den Unterpunkt Verknpfen ausw„hlen. Es erscheint nun ein Fenster
+       in dem die Erweiterung '.ASM' steht und eventuell ein Programm welches
+       mit dieser Erweiterung verknpft ist. Mit dem Button 'Durchsuchen'
+       kann nun der gewnschte Editor (Notepad.exe) ausgew„hlt werden.
+       Durch Doppelklick auf eine Datei mit der Endung '.ASM'
+       wird diese nun automatisch im gew„hlten Editor angezeigt.
+     - in „hnlicher Weise sollte man auch mit den Endungen '.LST'
+       und '.MAP' verfahren.
+     - Im Zusammenhang mit Windows als Programmierumgebung ist
+       m”glicherweise auch kein MAKE-Utility vorhanden. Aus
+       diesem Grund muá fr jedes Projekt ein Make-Batch erstellt werden.
+       Bei diesem Make-Batch handelt es sich um eine Reihe von DOS-Befehlen
+       die nacheinander ausgefhrt werden mssen um das gewnschte
+       Programm aus den entsprechenden Sourcefiles zu erzeugen.
+
+       Beispiel: 'demo\68HC11\float\demo.bat'
+
+	   call hasm demo.asm /?obj >Out.lst
+	   call hasm float.asm /?obj >>Out.lst
+
+	   call hasm demo.obj float.obj /link >>Out.lst
+
+       Das Beispielprogramm besteht aus den beiden Sourcefiles 'demo.asm'
+       und 'float.asm'. Zu den beiden Sourcefiles mssen zun„chst die
+       zugeh”rigen OBJ-Files erzeugt werden. Anschlieáend muá das
+       Programm bestehend aus den zwei OBJ-Modulen zusammengelinkt werden.
+       Alle Ausgaben von HASM sollen dabei nicht am Bildschirm erscheinen
+       sondern in das File 'Out.LST' geschrieben werden. (ACHTUNG: Bei der
+       ersten Ausgabeumleitung '>Out.LST' ist nur ein '>' bei allen weiteren
+       sind es zwei '>>'.)
+       Durch die Option '/?obj' wird von HASM zun„chst geprft, ob sich
+       das angegenbene Sourcefile seit der letzten Assemblierung ge„ndert
+       hat oder nicht. Nur bei einer Ver„nderung wird die Assemblierung
+       neu durchgefhrt. Das spart viel Zeit !
+       Das vollst„ndige šbersetzen des Programms wird mit einem
+       Doppelklick auf diese Batchdatei ausgel”st. Die Meldungen beim
+       šbersetzen k”nnen mit einem Doppelklick auf 'Out.LST' angeschaut
+       werden.
+     - Wenn man nun noch die Endung '.SIM' mit dem Programm 'HSIM.EXE'
+       verbindet, so gelangt man mit einem Doppelklick auf 'Demo.SIM'
+       sofort in den Simulator.
+
+
+    Geschwindigkeit optimieren
+    --------------------------
+     - Bei einer Installation ohne Festplattencache (Smartdrv,Qcache,..)
+       kann es Vorteile bringen eine Umgebungsvariable 'TMP' zu definieren
+       die auf ein RAM-Laufwerk zeigt. (fr Tempor„re Dateien !)
+
+
+4.Kommandozeile
+***************
+
+    Der Minimal-Aufruf des Assemblers lautet:	  HASM src_file
+
+    - Dieser Aufruf Assembliert das angegebene Source-File mittels
+      einer im Source-File angegebenen Assembler-Tabelle. (-> #Assembler)
+    - Defaultm„áig wird bei diesem Aufruf ein List-File erstellt. Das
+      List-File tr„gt den Namen des Source-Files mit der Erweiterung '.LST'.
+    - Zus„tzlich wird bei diesem Aufruf ein Intel-HEX-File erzeugt.
+      Der Name entspricht dem des Source-Files mit der Erw. '.HEX'.
+      (Defaultformat ist (INH) - Andere Formate -> Option '/P')
+
+    OPTION: HASM src_file /Ttabelle[.tab]
+    -------
+    - Wenn im Source-File keine Assemblertabelle festgelegt wird, kann
+      auch in der Aufrufzeile mit der Option /T.. eine Tabelle festgelegt
+      werden. (z.B.  HASM src_file /T80C552  )
+    - Die zulaessigen Tabellennamen entsprechen den Filenamen mit der
+      Endung `.Tab` im Unterverzeichnis `Tabellen` (`.Tab` weglassen !).
+      Wenn Sie also eine Tabelle integrieren wollen, so gengt es sie ins
+      Unterverzeichnis `Tabellen` zu kopieren.
+
+    OPTION: HASM src_file /Hfile[.hex]
+    -------
+    - Mit dieser Option kann fr das Intel-HEX-File ein anderer Name
+      festgelegt werden. (z.B.	HASM src_file /Hziel.txt )
+    - Wenn nur /H angegeben wird, so wird das HEX-File NICHT erzeugt.
+
+    OPTION: HASM src_file /Czahl
+    -------
+    - Mit dieser Option kann die fr Adresse+Code zur Verfgung stehende
+      Breite im Listing festgelegt werden.
+    - Standard-Breite sind 16 Zeichen. Das ergibt folgendes Format:
+	'AAAAAAAA CCCCCC ' + Originalzeile
+      (8 Spalten Adresse, Space, 6 Zeichen Code, Space, Originalzeile)
+    - Beispiel: HASM src_file /C18
+      ergibt:  'AAAAAAAA CCCCCCCC ' + Originalzeile
+    - Probleme k”nnen in Verbindung mit Texteditoren entstehen die
+      Tabulator-Zeichen verwenden. In einem solchen Fall sollte die
+      Breite so gew„hlt werden daá sie einem vielfachen dieser
+      Tabulatorbreite entspricht.
+
+    OPTION: HASM src_file /Fzahl
+    -------
+    - Mit dieser Option kann die Anzahl der anzuzeigenden
+      Fehlermeldungen auf ein 'ertr„gliches' Maá beschr„nkt werden.
+    - Standardm„áig ist eine Fehlerzahl von 10 eingestellt.
+
+    OPTION: HASM src_file /Sy[mbole]
+    -------
+    - Mit dieser Option wird an das Ende des Listings eine Tabelle
+      der vom Programmierer verwendeten Symbole angefgt.
+    - Die Symbole aus der Tabelle werden nicht mit aufgefhrt !
+
+    OPTION: HASM src_file /Si[mulator-File]
+    -------
+    - Durch diese Option wird der Linker angewiesen ein fr den
+      Simulator HSIM geeignetes Eingangsfile zu erzeugen
+
+    OPTION: HASM src_file /NoC[ode]
+    -------
+    - Mit dieser Option wird im Listing die Angabe von Adresse
+      und Code unterdrckt.
+    - Makros werden weiter Expandiert.
+    - Mit dieser Option kann ein 'Komplett'-Source-File erstellt
+      werden in dem:
+	   - alle Include-Files enthalten sind
+	   - alle Bedingten Assemblierungsanweisungen ausgewertet sind
+	   - alle Define-Ausdrcke ersetzt sind
+	   - alle Makros expandiert sind und
+	   - ein Fehlercheck durchgefhrt wurde.
+
+    OPTION: HASM src_file /LInt[ernals]
+    -------
+    - Mit dieser Option werden ins Listing zus„tzlich Assemblerinterne
+      Werte aufgenommen.
+       - die einzelnen Ausdrcke bei den Argumenten
+       - Segmentlisten w„hrend des Linkvorganges
+
+    OPTION: HASM src_file /LT[abelle]
+    -------
+    - Mit dieser Option werden ins Listing zus„tzlich alle relevanten
+      Zeilen der Tabelle ins Listingfile aufgenommen.
+    - Beim Verwenden einer neuen Tabelle kann man damit alle in der
+      Tabelle verwendeten Makros und Segmentreservierungen anzeigen
+      lassen, und zwar auch die, die der Tabellenersteller durch
+      geeignete Direktiven normalerweise nicht immer anzeigen will.
+
+    OPTION: HASM src_file /NoS[egments]
+    -------
+    - Mit dieser Option wird die Liste der benutzten Segmente, die
+      defaultm„áig im Listing erscheint, unterdrckt.
+
+    OPTION: HASM src_file /[?]Obj[ekt]
+    -------
+    - Mit dieser Option wird der Assembler angewiesen nur ein Objekt-File
+      mit zugeh”rigem Listfile zu erstellen (und nicht zu linken ! ).
+    - Mit Angabe des '?' untersucht HASM zun„chst ob das Quellfile
+      seit dem letzten Assembliervorgang ver„ndert wurde. Wenn keine
+      Ver„nderung stattgefunden hat, wird kein neues Objektfile erzeugt.
+      Eine eventuelle Ver„nderung wird am Datum von Objekt- und Quellfile
+      erkannt. Wenn das Quellfile neueren Datums ist als das Objektfile,
+      so wird eine Ver„nderung angenommen und folglich ein neues
+      Objektfile erstellt.
+
+    OPTION: HASM src_file /P[Formatkennung]
+    -------
+    - Mit dieser Option kann das HEX-Ausgabeformat ge„ndert werden.
+      Momentan gibt es folgende 3 Formatkennungen:
+	INH    - Intel-Hex-Format (G„ngig bei sehr vielen 8-Bit CPU's und
+		 wird praktisch von allen Programmierger„ten verstanden)
+	INHX8M - Erweitertes Intel HEX-Format (16-Bit-Daten wobei die
+		 Adresse mit zwei multpliziert ist und bei den Daten
+		 zun„chst das Low- und dann das High-Byte kommt).
+	INHX32 - Entspricht dem INHX8M-Format enth„lt aber zus„tzlich Segment-
+		 adressen, so daá mehr als 64k adressiert werden k”nnen.
+
+    OPTION: HASM src_file /LM[acros]
+    -------
+    - Mit dieser Option wird der Assembler angewiesen alle Makro-
+      definitionen mit ins Listing aufzunehmen.
+
+    OPTION: HASM src_file /EM[acros]
+    -------
+    - Mit dieser Option wird der Assembler angewiesen bei allen Makro-
+      aufrufen die Menemonics der Makros mit einzufgen.
+
+    OPTION: HASM src_file /Q[uiet]
+    -------
+    - Mit dieser Option gibt der Assembler keine Lebenszeichen
+      (Punkte, Doppelpunkte) w„hrend der šbersetzung mehr von sich.
+    - Meldungen werden dadurch nicht beeinfluát.
+    - Im Zusammenhang mit intelligenten Editoren verkrzt sich damit
+      das zu analysierende Antwortfile !
+    - Der Zeitbedarf fr eine Assemblierung nimmt nur geringfgig ab !
+
+    OPTION: HASM obj_file1 [obj_file2] [..] /Link
+    -------
+    - Mit dieser Option wird der Assembler zu einem Linker.
+    - Bei den angegebenen OBJ-Files muá es sich um Files handeln,
+      die 'HASM' mit der Option '/OBJ' erstellt hat.
+    - Als Ergebnis werden ein Map-File (.MAP) und ein Hex-File (.HEX)
+      erzeugt. Als Name fr die Ergebnis-Files wird der Name des
+      ersten OBJ-Files verwendet.
+    - Alternativ kann man dem Linker die zu linkenden Dateien auch
+      in einer Datei bergeben.
+      Beispiel:  HASM /Link @job.lnk
+      Inhalt von 'job.lnk': obj_file1
+			    obj_file2
+			    ..
+      Diese Art von Aufruf wird auch von den meisten Utilities fr
+      Programmentwickler benutzt.(z.B. Programmers Workbench von Microsoft)
+
+    - Beim Linken k”nnen auch Libraries verwendet werden. Unter Library
+      versteht man eine Einheit aus mehreren OBJ-Files auf die man beim
+      Linken verweist. Der Linker bindet dann automatisch die Module
+      ins Programm die zum Abs„ttigen von Referenzen (Externals) ben”tigt
+      werden.
+    - Das Erzeugen der Libraries geschieht nicht wie bei anderen Assemblern
+      mit einem gesonderten Programm, sondern einfach mit dem DOS-Befehl COPY.
+    - Angenommen man will die Objektmodule MODUL_1.OBJ, MODUL_2.OBJ und
+      MODUL_3.OBJ zu einer Library verbinden, so geschieht dies mit:
+	COPY MODUL_1.OBJ+MODUL_2.OBJ+MODUL_3.OBJ MODULE.LIB
+    - Wenn man sp„ter noch ein viertes Modul (MODUL_4.OBJ) hinzufgen
+      will:    RENAME MODULE.LIB TMP.LIB
+	       COPY TMP.LIB+MODUL_4.OBJ MODULE.LIB
+	       DEL TMP.LIB
+
+
+
+
+5.Datenstrukturen
+*****************
+
+    Der Assembler kennt 3 unterschiedliche Datentypen aus denen
+    dann beliebige Ausdrcke gebildet werden k”nnen:
+
+					    Speicherbedarf
+	 - Integerzahlen (=Ganze Zahlen)      4 Bytes
+	 - Floatzahlen (Flieákommazahlen)     8 Bytes
+	 - Strings (Zeichenketten)	     <128 Bytes
+
+    Integerzahlen:
+    --------------
+	      <digits><suffix>
+		 \ 	  \
+		  \ 	   \_ Suffix  b/B  o/O	d/D/-  h/H
+		   \ 	      ----------------------------
+		    \ 	      Basis    2    8	 10    16
+		     \
+		      \_ digits = 0-9,a-f,A-F
+
+	   oder
+
+	      '<Zeichen>'
+		  \
+		   \
+		     Bis zu 4 Zeichen aus: a-z,A-Z,0-9,”„™š
+					   #á@+-*/!$%&()=?^ø[]{},.;:_
+		     ESC-Sequenzen:	   ' = \'
+					   " = \"
+					   \ = \\
+				     Klingel = \a  (= 7d)
+				   Backspace = \b  (= 8d)
+				  Neue Seite = \f  (= 12d)
+				  Neue Zeile = \n  (= 10d)
+				Zeilenanfang = \r  (= 13d)
+			 Horzontal Tabulator = \t  (= 9d)
+			  Vertikal Tabulator = \v  (= 11d)
+			(beliebiges Zeichen) = \xx (xx = 2-stellige Hexzahl)
+
+     - Default (also ohne Suffix) wird als Dezimalzahl interpretiert.
+     - Der Assembler versteht auch das Prefix '$' fr Hexadezimale Zahlen
+       und das Prefix '%' fr Bin„re Zahlen. Beispiel: %1100 = $C = 12
+       Bei eigenen Programmen sollte diese Schreibweise m”glichst nicht
+       verwendet werden.
+     - Bei mehr als einem Zeichen werden alle Zeichen als Stellen einer
+       Zahl im System mit der Basis 256 interpretiert.
+       (z.B.: '0 \'' = (48*256+32)*256+39 = 3153959d = 302027h)
+
+
+
+    Floatzahlen:
+    ------------
+		    [-]<digits>[.][<digits>][e/E[-]<digits>]
+
+     - Bei dieser Art von Zahlen tritt in Zusammenhang mit Bitadressen
+       bei einigen Prozessoren (MCS-51,MCS-96,..) eine besonderheit auf.
+       Der Punkt wird bei diesen Prozessoren n„mlich als Bitoperator
+       verwendet (Beispiel: 25.4 = 4.Bit auf der Adresse 25d). Das
+       angefhrte Beispiel k”nnte nicht von der Floatzahl 25.4 unterschieden
+       werden. Aus diesem Grund muá bei Dezimaladressen im Zusammenhang
+       mit Bitadressierung beim obigen Beispiel 25d.4 geschrieben werden.
+       Bei anderen Zahlenbasen tritt dieses Problem nicht auf da dort
+       ohnehin ein Suffix angegeben werden muá.
+
+
+
+    Zeichenketten:
+    --------------
+
+	   "<Zeichen>"
+		  \
+		   \
+		     Bis zu 128 Zeichen aus: a-z,A-Z,0-9,”„™š
+					     #á@+-*/!$%&()=?^ø[]{},.;:_
+		     ESC-Sequenzen:	   ' = \'
+					   " = \"
+					   \ = \\
+				     Klingel = \a  (= 7d)
+				   Backspace = \b  (= 8d)
+				  Neue Seite = \f  (= 12d)
+				  Neue Zeile = \n  (= 10d)
+				Zeilenanfang = \r  (= 13d)
+			 Horzontal Tabulator = \t  (= 9d)
+			  Vertikal Tabulator = \v  (= 11d)
+			(beliebiges Zeichen) = \xx (xx = 2-stellige Hexzahl)
+
+
+
+    Operatoren:
+    -----------
+		Operator     Priorit„t	    Beschreibung
+			  Int Float String
+
+		-	   9	9     -	    Vorzeichen
+		~	   9	9     -	    1-er Komplement
+		^	   -	8     -	    Potenzieren
+		*	   7	7     -	    Multiplizieren
+		/	   7	7     -	    Dividieren
+		%	   7	-     -	    Modulo (Rest nach Division)
+		-	   6	6     -	    Subtrahieren
+		+	   6	6    (6)    Addieren
+		<<	   5	-     -	    links schieben
+		>>	   5	-     -	    rechts schieben
+		<	   4	4     -	    Kleiner als
+		<=	   4	4     -	    Kleiner oder gleich
+		>	   4	4     -	    Gr”áer als
+		>=	   4	4     -	    Gr”áer oder gleich
+		==	   4	4     -	    Gleich
+		!=	   4	4     -	    Nicht gleich
+		=	   4	4     -	    Gleich
+		&	   3	-     -	    Bitweise 'UND'
+		^	   3	-     -	    Bitweise 'EXOR'
+		|	   3	-     -	    Bitweise 'ODER'
+
+
+    Funktionen:
+    -----------
+		int()	     \
+		float()       \ Umwandlung zwischen den verschiedenen
+		string()      /     Datentypen
+
+	   Mathematische Funktionen:
+		abs(),sin(),cos(),tan(),asin(),acos(),atan()
+		sinh(),cosh(),tanh(),exp(),log(),log10()
+
+
+
+    Namen:   fr Label, Segmente, usw.
+    ------
+    - Zugelassen sind Buchstaben, Zahlen und '_'(Underscore)
+    - Das erste Zeichen muá ein Buchstabe sein.
+
+	Beispiele: So_muá_ein_Label_aussehen   ; o.K.
+		   L1_a			       ; o.K.
+		   4DOS			       ; Fehler !
+
+    - Label- oder Makronamen sollten in der ersten Spalte beginnen.
+    - Kommentar kann in jeder Zeile angefgt werden und muá mit ';' beginnen.
+    - Mit Ausnahme von Makronamen und Maschinenbefehlen (beides Mnemonics !)
+	wird zwischen Groá-und Kleinschreibung unterschieden !
+
+
+
+    Ausdrcke:
+    ----------
+		<expr> = mathematisch sinnvoller Ausdruck betehend aus
+			 Zahlen, Operatoren, Labels und runden Klammern.
+
+    - Vergleichende Operatoren liefern 0 fr falsch und -1 fr wahr.
+      (Bei Integerzahlen bedeutet -1 = FFFFFFFFh)
+
+	Beispiele: 10h+10>>10b	    ergibt 6
+		   (10h+10b)>>1	    ergibt 9
+		   ((w1=1)&2)	    ergibt 2 wenn w1=1 sonst 0
+
+	 (weitere Beispiele fr Ausdrcke im Demofile: 'misc.asm')
+
+
+
+6.Filenamen
+***********
+    Ausgangsfile fr HASM ist immer der Quelltext, der die Erweiterung
+    ".ASM" besitzen sollte. Beim Assemblieren des Quelltextes mit der
+    Option "/OBJ" entstehen zwei Files die den Namen des Quelltextes
+    und als Endungen ".OBJ" und ".LST" besitzen.
+    Das LST-File enth„lt den gesamten Quelltext und zus„tzlich bestimmte
+    Ausgaben des Assemblers. Unter anderem sind in disesm LST-File auch
+    alle Fehlermeldungen enthalten, die beim Assemblieren aufgetreten sind.
+
+       xxx.ASM ---> (HASM ... /OBJ) -------> xxx.LST
+				      \
+				       ----> xxx.OBJ
+					\
+					 --> Pass1.LST
+
+    Das File mit der Endung ".OBJ" enth„lt alle fr den anschlieáenden
+    Linkvorgang n”tigen Daten. Ein oder mehrere solcher OBJ-Files werden
+    durch HASM mit der Option "/LINK" zu einem ausfhrbaren Programm
+    verbunden. Die noch verschiebbaren Objektmodule werden auf eine feste
+    Adresse im Speicher des Zielsystems abgebildet und in Form eines
+    HEX-Files ausgegeben. Dieses HEX-File kann nun direkt in das Zielsystem
+    geladen und zur Ausfhrung gebracht werden.
+
+       xxx.OBJ ---> (HASM ... /LINK) ---------> xxx.MAP
+				       \
+					------> xxx.HEX
+					 \
+					  ----> xxx.SIM
+					   \
+					    --> Pass1.LST
+
+    Das MAP-File enth„lt Angaben ber den Ort, an den der Linker die
+    Objektmodule geschoben hat.
+    Durch Angabe der Option "/Simulator" wird beim Linken ein weiteres
+    File mit der Endung ".SIM" erzeugt. Dieses File enth„lt grunds„tzlich
+    auch alle Angaben die sich im HEX-File befinden. Zus„tzlich enth„lt
+    es aber noch weitere Informationen, die den Zusammenhang zum(zu den)
+    Quellfile(s) herstellen. Mit Hilfe dieses SIM-Files ist es HSIM
+    (Simulator/Monitor) m”glich sowohl im Simulatorbetrieb als auch im
+    Monitorbetrieb eine Quellkodeorientierte Fehlersuche zu realisieren.
+    Bei jedem Aufruf von HASM wird ein File mit dem Namen "Pass1.LST"
+    erzeugt oder aktualisiert. Dieses File wird im aktuellen Verzeichnis
+    angelegt oder kann mit Hilfe der Umgebungsvariable "TMP" in ein
+    beliebiges anders Verzeichnis (RAM-Laufwerk ?) verlegt werden.
+    Dieses File kann gefahrlos nach dem Assemblieren wieder gel”scht werden.
+
+
+
+7.Preprozessordirektiven
+************************
+
+    #INCLUDE <filename>
+    - Importiert <filename> als Source-Code ins Aktuelle Source-File
+    - Beispiel:  #Include "zusatz.ASM"
+
+    #DEFINE <label>
+    #DEFINE <Text_alt> <Text_neu>
+    - Definiert ein Preprozessor-Label fr die Auswertung ber
+      Anweisungen zur bedingten Assemblierung.
+    - Kann aber auch zum Ersetzen bestimmter Ausdrcke vor der
+      Assemblierung im Quell-Text verwendet werden.
+    - Ersetzen im Quelltext wird immer nur dann durchgefhrt, wenn
+      ein Ersatzausdruck (Text_neu) angegeben ist.
+      Beispiel:
+      ---------	#Define Lab_alt Lab_neu
+
+		Lab_alt	DJNZ R1,Lab_alt
+			MOV A,Lab_alt/256
+
+      Nach dem Preprozessor:
+      ----------------------
+		Lab_neu	DJNZ R1,Lab_neu
+			MOV A,Lab_neu/256
+
+
+    #IFDEF <label>
+    #IFNDEF <label>
+    - Nur wenn die Konstante (nicht) definiert ist, wird der folgende
+      Source-Text weiter verarbeitet.
+    - Bedingte Assemblierungsanweisungen k”nnen bis zu einer
+      Verschachtelungstiefe von 15 eingesetzt werden.
+
+    #IF <expr>
+    - Nur wenn der Ausdruck erfllt (wahr) ist, wird der folgende
+      Source-Text weiter verarbeitet.
+    - Bedingte Assemblierungsanweisungen k”nnen bis zu einer
+      Verschachtelungstiefe von 15 eingesetzt werden.
+
+    #ELSE
+    - Alternativer Anweisungsblock fr bedingt Assemblierung.
+
+    #ENDIF
+    - Ende der bedingten Assemblierung.
+
+      Beispiel: (Bedingte Assemblierung)
+      --------- #DEFINE Monitor
+
+		#IFDEF Monitor
+		#INCLUDE "TV.ASM"
+		#ELSE
+		#INCLUDE "LCD.ASM"
+		#ENDIF
+
+			JB Anzeige_init,weiter
+		#IFDEF Monitor
+			LCALL TV_init
+		#ELSE
+			LCALL LCD_init
+		#ENDIF
+		weiter:
+
+      Nach der Assemblierung:
+      -----------------------
+		...	   \ Inhalt von 'TV.ASM'
+		...	   /
+      75 200003 	JB Anzeige_init,weiter
+      78 120000 	LCALL TV_init
+      7B        weiter:
+
+
+
+    #CPU <tabellen_name>
+    #ASSEMBLER <tabellen_name>
+    - Legt die Assemblertabelle fest mittels der der vorliegende
+      Source-Text Assembliert werden soll.
+    - šberschreibt eine unter Umst„nden in der Kommandozeile angegebene
+      Option mit dem gleichen Zweck !
+    - Bei einem File-Namen ohne Pfadangabe wird im Unterverzeichnis
+      'TABELLEN' nach der Tabelle gesucht.
+    - Defaulterweiterung ist '.TAB'.
+
+    #SYMLIST
+    - Mit dieser Direktive wird an das Ende des Listings eine Tabelle
+      der vom Programmierer verwendeten Symbole angefgt.
+    - Die Symbole aus der Tabelle (= feste interne Symbole)
+      werden nicht mit aufgefhrt !
+
+    #EXPANDMAKROS
+    #NOEXPANDMAKROS
+    - Mit dieser Direktive wird der Assembler angewiesen bei allen
+      Makroaufrufen die Menemonics der Makros mit einzufgen (oder nicht).
+
+    #LISTMAKROS
+    #NOLISTMAKROS
+    - Mit dieser Direktive wird der Assembler angewiesen alle
+      Makrodefinitionen ins Listing aufzunehmen (oder nicht).
+
+    #LIST
+    #NOLIST
+    - Mit dieser Direktive wird der Assembler angewiesen alle folgenden
+      Originalzeilen ins Listing aufzunehmen (oder nicht).
+    - Default ist #List im normalen Programmtext und #NoList innerhalb
+      von Tabellen.
+
+
+8.Assembler-Direktiven
+**********************
+
+    DB	<expr>[,<expr>][,<expr>]...
+    - Reserviert die entsprechende Anzahl an Bytes im Speicher.
+    - Fhrt gleichzeitig eine Initialisierung des betreffenden Bereichs
+      aus und kann deshalb nicht in Belegungssegmenten verwendet werden.
+    - Zeichenketten-Konstanten drfen maximal 120 Zeichen ( oder Escape-
+      Sequenzen ) enthalten.
+    - Escape-Sequenzen:  \a	Alert (Bell)
+			 \b	Backspace
+			 \f	Formfeed
+			 \n	Newline
+			 \r	Carriage return
+			 \t	Horizontal tab
+			 \v	Vertical tab
+			 \xx	Zweistellige Hexzahl fr ein Zeichen
+				(Wenn das 2.Zeichen keine Hexziffer mehr
+				 ist wird nach dem ersten Zeichen bereits
+      Beispiel: 		 die Umsetzung beendet !)
+      --------- 	ORG 100
+		Start	DB "ABC\'\"\r\n\0"
+
+      Nach der Assemblierung:
+      -----------------------
+      64		ORG 100
+      64 414243
+      67 27220D
+      6A 0A00	Start	DB "ABC\'\"\r\n\0"
+
+      (Weitere Beispiele im DEMO-File: 'demo\80c552\misc\misc.asm')
+
+
+    <label> TABELLE <var>,<formel>,<von>,<schritt>,#<anzahl>[,<befehl>]
+    <label> TABELLE <var>,<formel>,<von>,#<anzahl>,<bis>[,<befehl>]
+    - Mit diesem Befehl k”nnen Tabellen erzeugt werden.
+    - Im Rahmen dieses Befehls wird fr 'var' eine Real-Variable
+      angelegt. Konsequenterweise sind damit fr 'von','schritt' und
+      'bis' auch Real-Zahlen m”glich.
+    - Mit 'anzahl' wird die Anzahl der gewnschten Tabellenwerte festgelegt.
+    - 'var' legt die Laufvariable fr die Formel fest.
+    - 'formel' kann ein beliebiger numerischer Ausdruck sein
+    - Der Tabellebefehl erzeugt eine Folge von Werten die ber 'befehl'
+      in den Assemblertext eingebaut werden k”nnen. 'befehl' kann dabei
+      ein Maschinenbefehl oder ein Makro sein welches genau ein Argument
+      ohne Sonderzeichen und ohne sonstige feste Ausdrcke erwartet.
+      ( Beispiele -> Demoprogramm: 'demo\80c552\tabellen\Tabellen.asm')
+    - Beim Weglassen von <befehl> wird automatisch 'DB à' verwendet.
+
+
+    DS <expr>
+    - Reserviert die durch <expr> angegebene Anzahl an Einheiten im Speicher.
+      Die Absolute gr”áe einer Einheit wird durch das Segment vorgegeben
+      in dem diese Anweisung steht. In einem normalen Codesegment wird mit
+      der Anweisung 'DS 1' genau 1 Byte reserviert. In einem Bitsegment wie
+      es die MCS-51 Controllerfamilie besitzt, reserviert die gleiche
+      Anweisung genau 1 Bit im Speicher.
+    - Beispiel:
+		   DS 4*bufferlaenge
+
+      Diese Anweisung reserviert an der aktuellen Stelle Platz fr
+      vier Bufferspeicher deren L„nge durch die Konstante 'bufferlaenge'
+      vorgegeben wird.
+    - Fhrt in keinem Fall eine Initialisierung durch. Dient
+      also ausschlieálich der Organisation des Speichers.
+
+    <label> EQU <expr>
+    - Definiert eine Konstante mit dem Namen 'label' und ordnet ihr
+      den Wert <expr> zu.
+    - Ausdrcke werden nicht sofort berechnet sondern erst wenn die
+      eigentliche Codeumsetzung beginnt.
+
+    <label> SET <expr>
+    - Genau wie mit 'EQU' nur kann hier ein bereits existierendes
+      Label auch mehrfach umdefiniert werden.
+
+    ORG     <expr>
+    - Setzt den aktiven Segment-Zeiger auf den durch <expr>
+      festgelegten Wert.
+    - Damit wird aus einem leeren Segment automatisch ein Festes.
+    - Wenn das Segment in dem die 'ORG'-Anweisung steht nicht leer
+      ist, dann wird automatich ein neues (Festes) leeres Segment
+      geschaffen. (allerdings ohne Namen ! -> '?SEG')
+    - Wenn in einem Ausdruck unmittelbar oder auch mittelbar ber andere
+      Variablen auf die feste Assemblerinterne Variable '@0' zugegriffen
+      wird, so wird das betreffende Segment NICHT Fest ! Es entsteht durch
+      das Verwenden der internen Variable '@0' eine besonderen Art von
+      Segment welches gesteuert ber eine Formel nur an bestimmten Stellen
+      im Speicher allokiert werden kann. Einfachstes Anwendungsbeispiel
+      ist das Nachbilden der ALIGN-Anweisung anderer Assembler.
+
+      Anderer Assembler:	Align Paragraph
+
+	   HASM(direkt):	ORG (@0+16)&(-16)
+
+       HASM Nachbildung:	Paragraph EQU 16      ; Durch diese 4 Zeilen
+			  Align Macro Segs	      ; kann ALIGN genau wie
+				ORG (@0+Segs)&(-Segs) ; bei anderen Assemblern
+				Endmacro	      ; verwendet werden
+
+      Mit der Nachbildung:	Align Paragraph   ;\ 2-mal das Gleiche
+				Align 16	  ;/
+				Align 256	  ; '= Align PAGE'
+
+      Bei der Alignnachbildung ist wichtig zu wissen, daá der Wert von '@0'
+      der um eins verminderten ersten zul„ssigen Startadresse beim Linken
+      entspricht. Der Ausdruck muá daraus die ERSTE gewnschte Startadresse
+      erzeugen. Wenn man das Ergebnis der Formelauswertung bei einer
+      zweiten Formelauswertung wieder als '@0' einspeist, muá daraus die
+      n„chste gewnschte Startadresse erzeugt werden. Das heiát, daá
+      ausgehend von einer vom Assembler vorgegebenen ersten, gerade nicht
+      mehr zul„ssigen Startadresse (Startadresse - 1) eine und dann
+      nach weiteren Aufrufen weitere gltige Startadressen von der Formel
+      zurckgeliefert werden mssen. Der von der Formel zurckgelieferte
+      Wert muá immer gr”áer sein als der Wert der Variable '@0' beim
+      Aufruf.
+
+
+	     __/ [AT <expr>]
+    ?SEG    /  \ <segment_name>
+    - Mit dieser Anweisung kann man beliebige Segmente erzeugen und
+      beliebig zwischen verschiedenen Segmenten wechseln.
+    - Grunds„tzlich gibt es zwei verschiedene Arten von Segmenten:
+		      1. Feste Segmente und
+		      2. durch den Linker verschiebbare Segmente.
+      1.Feste Segmente:
+	Zu festen Segmenten sollten vom Programmierer nur solche Teile
+	erkl„rt werden die unbedingt an einer bestimmten Stelle
+	bleiben mssen (Beispiel: Tabellen auf die mit einer speziellen
+	Adressierungsart zugegriffen werden soll). Erzeugt werden
+	feste Segmente durch '?SEG AT <adr>'. Dies hat den Vorteil kurz
+	und pr„gnant zu sein, hat aber den Nachteil, daá Segmente die
+	auf diese Art erzeugt wurden keinen Namen besitzen. In ein
+	Segment ohne Namen kann man wenn man es einmal verlassen hat
+	sp„ter nicht mehr hineinwechseln.
+	Alternativ kann ein festes Segment auch durch die Anweisungen
+	'?SEG <name>' und 'ORG <adr>' erzeugt werden. Diese beiden
+	Anweisungen mssen direkt in zwei Zeilen aufeinander folgen
+	und erzeugen dann ein festes Segment mit Namen.
+
+      2.Verschiebbare Segmente:
+	M”glichst viele (alle ?!) Segmente sollten verschiebbar bleiben.
+	Dies ist besonders dann wichtig wenn mit Unterprogramm-Bibliotheken
+	gearbeitet werden soll. Ein verschiebbares Segment wird mit
+	dem Befehl '?SEG <name>' erzeugt.
+
+    - Neben den grunds„tzlichen Arten von Segmenten werden in der
+      Regel sogenannte Segmentgruppen gebildet. Die h„ufigsten unter
+      ihnen sind die Gruppe der Code-Segmente und die Gruppe der
+      Daten-Segmente (fortsetzbar !). Zu welcher Gruppe ein neu
+      erzeugtes Segment geh”ren soll wird durch den ersten Buchstaben
+      der Segmentanweisung festgelegt. Beispiel: CSEG fr ein Segment
+      welches zur Gruppe der Code-Segmente geh”ren soll.
+
+    - Segment-GRUPPEN spielen eine wichtige Rolle beim Linken der
+      einzelnen Segmente zum fertigen Programm. Sie legen mit die
+      Reihenfolge und den Ort der Segmente im Speicher fest.
+      Beispiel: Beim Programmieren liegen Daten und Code-Segmente
+		bedingt durch Modulare Programmierung und Unterprogramm-
+		Bibliotheken in bunt gemischter Reihenfolge vor.
+		Bei Code-Segmenten kann es aber vorkommen daá sie in
+		ein EPROM gebrannt werden sollen, w„hrend Datensegmente
+		dies normalerweise sehr bel nehmen !!
+		Wenn alle Segmente verschiebbar sind, so kann der
+		Linker die Segmente in eine Anordnung bringen, so daá
+		alle Segmente in einem physikalisch sinnvollen Speicher
+		zu liegen kommen.
+      Bei Programmen die nur im RAM-Speicher zur Ausfhrung kommen
+      sind Segmentgruppen von untergeordneter Bedeutung. Hier beschr„nkt
+      sich die Aufgabe des Linkers meiát darauf, daá er die beweglichen
+      Segmente m”glichst geschickt (kleine Lcken im benutzten Speicher)
+      zwischen den festen Segmenten unterbringt. Diese Linkart ist
+      im HASM als Default installiert.
+      Trotzdem sollte man alle Programme so schreiben, daá sie auch im
+      Eprom in etwa das tun was von ihnen verlangt wird !?
+		 (Wenn sie daá berhaupt jemals k”nnen !)
+
+    - Immer wenn '?SEG' in Verbindung mit einem bereits existieren
+      Segmentnamen auftaucht wird in das jeweilige Segment gewechselt
+      ohne das Segment zu ver„ndern.
+    - Die Segmentzeiger bleiben auch im inaktiven Zustand erhalten !
+    - Beim erneuten Wechsel in ein bereits benutztes Segment wird
+      an der zuvor verlassenen Stelle fortgefahren.
+    - Um zu erfahren welche Segmentgruppen fr einen implementierten
+      Prozessor vorhanden sind, sucht man in der entsprechenden
+      Prozessortabelle nach Zeilen die mit einem 's' (kleines S) beginnen.
+      Beim 80C166 von Siemens (80C166.TAB) ergibt sich bei dieser
+      Suche:	 s C 0 10000h 0
+		 s CODE 0 10000h 0
+		 s D 0 10000h 0
+		 s DATA 0 10000h 0
+      Das erste Argument nach dem 's' ist jeweils die Bezeichnung die
+      bei einer Segmentdefinition im Assembler verwendet werden darf.
+      Beim '80C166' sind dem nach vier Segmentbezeichnungen (C, Code,
+      D, Data) m”glich.
+      Wenn in einer Tabelle keine Zeilen mit 's' enthalten sind, so
+      sollte man sich vergewissern, daá in die vorliegende Tabelle keine
+      andere Tabelle, die 's'-Zeilen enth„lt, importiert wird.
+      Importzeilen beginnen mit 't' worauf als Argument nur der Name
+      der zu importierenden Tabelle folgt.
+      Wenn keine andere Tabelle importiert wird, so arbeitet der
+      Assembler mit einer Defaultsegmentgruppe Namens 'C' (=Codesegment).
+
+
+    <segname> SEGMENT <segment_gruppe>
+    - Alternative zum Erzeugen von Segmenten.
+    - Mit dieser Anweisung k”nnen im Gegensatz zu '?SEG' auch Segment-
+      Gruppen angesprochen werden die einen L„ngeren Gruppennamen haben.
+      Solche Gruppen mssen aber fr den jeweiligen Prozessor in der
+      Konfigurationstabelle des Assemblers definiert sein !
+
+
+    <name>  MACRO    <args>
+	    ENDMACRO
+    - Dient zur Definition von (sehr leistungsf„higen !) Makros.
+      Beispiel 1: (Makro zum L”schen einer Speicherstelle)
+      -----------
+		Reset	Macro arg   ;Anfang der Definition
+			MOV arg,#0  ;\ Makro zum l”schen einer
+			MOV arg+1,#0;/	16-Bit Variable
+			ENDMACRO    ;Ende der Definition
+
+			DSEG
+			ORG 10	    ; Speicher fr die Variable reser-
+		Merker	DS 2	    ; vieren aber nicht Initialisieren
+
+			CSEG	    ; Variable im Programm
+			Reset Merker;  l”schen (Initialisieren)
+
+      Nach der Assemblierung:
+      ----------------------
+
+       0        	DSEG
+       A        	ORG 10	    ; Speicher fr die Variable reser-
+       A        Merker	DS 2	    ; vieren aber nicht Initialisieren
+                
+       0        	CSEG	    ; Variable im Programm
+                	Reset Merker;  l”schen (Initialisieren)
+       0 750A00		MOV (Merker),#0
+       3 750B00 	MOV (Merker)+1,#0
+
+      Diese Beispiel zeigt ein Makro mit einer normalen Variablen.
+       Die Variable 'arg' wird im Makro an allen Stellen durch den
+       aktuellen Ausdruck (hier: 'Merker') ersetzt. Dabei wird in
+       allen F„llen der einzusetzende Ausdruck zus„tzlich in Klammern
+       gesetzt um 'Punkt-vor-Strich' Probleme zu vermeiden.
+      Bei der Variablenbenennung in der Makrodefinition drfen keine
+       festen Mnemonischen Argumente des verwendeten Prozessors
+       verwendet werden ! (-> Beispiel 2)
+
+
+      Beispiel 2: (Feste Mnemonic-Argument, Lokales Label)
+      -----------
+		DEC	Macro DPTR  ; Anfang der Definition
+			PUSH ACC    ;  Einfaches Macro mit einem festen
+			MOV A,DPL   ;  Mnemonic Argument zur Nachbildung
+			DEC DPL     ;  des beim 8031 fehlenden Befehls
+			JNZ Ende    ;  zur Erniedrigung des 16-Bit
+			DEC DPH     ;  Datenzeigers um 1
+		Ende	POP ACC     ;
+			ENDMACRO    ; Ende der Definition
+
+			CSEG
+			INC DPTR    ; DPTR erh”hen mit Standard-Befehl
+			DEC DPTR    ; DPTR erniedrigen (obiges Macro !!)
+
+      Nach der Assemblierung:
+      ----------------------
+      19		CSEG
+      19 A3		INC DPTR    ; DPTR erh”hen mit Standard-Befehl
+			DEC DPTR    ; DPTR erniedrigen (obiges Macro !!)
+      1A C0E0		PUSH ACC    ;\
+      1C E582		MOV A,DPL   ; \
+      1E 1582		DEC DPL     ;  \ Expandierung des Makros 'DEC DPTR'
+      20 7002		JNZ (Ha2sM) ;  / - Das Label 'Ha2sM' wurde
+      22 1583		DEC DPH     ; /    vom Assembler vergeben.
+      24 D0E0	Ha2sM	POP ACC     ;/
+
+      Dieses Beispiel hat als Besonderheit ein festes Mnemonic-Argument.
+       Der verwendete Prozessor kennt einen Befehl 'INC DPTR'. Die
+       Funktionsweise des Befehls ist hier zun„chst nebens„chlich, -
+       wichtig ist hingegen daá dieser Befehl das feste Mnemonic Argument
+       'DPTR' besitzt. šberall wo diese Argument Auftritt wird es nicht
+       als Variable behandelt sondern als feste Zeichenkette.
+       Damit lassen sich sehr leicht 'Zusatzbefehle' (=Makros) realisieren
+       die in die Nomenklatur des verwendeten Prozessors passen.
+      Dieses Makro besitzt ein Lokales Label. Dieses Label wird vom
+       Assembler bei jeder Verwendung des Makros neu vergeben und
+       natrlich berall im Makro eingesetzt.
+
+      Beispiel 3: (Festes Mnemonic-Argument + Sonderzeichen)
+      -----------
+		MOV	Macro A,@arg  ;Anfang der Definition
+			MOV A,R0      ;
+			PUSH ACC      ;
+			MOV R0,#arg   ;
+			MOV A,@R0     ;
+			XCH A,R0      ;
+			POP ACC	      ;
+			XCH A,R0      ;
+			ENDMACRO      ;Ende der Definition
+
+			CSEG
+			MOV A,@10     ; Indirekter Zugriff ber Register 0Ah
+
+
+      Nach der Assemblierung:
+      ----------------------
+			MOV A,@10   ; Indirekter Zugriff ber Register 0Ah
+      26 E8             MOV A,R0
+      27 C0E0           PUSH ACC
+      29 780A           MOV R0,#(10)
+      2B E6             MOV A,@R0
+      2C C8             XCH A,R0
+      2D D0E0           POP ACC
+      2F C8             XCH A,R0
+
+      Zu bedenken ist bei diesem Beispiel, daá es beim hier verwendeten
+       8031 Prozessor sowohl den Befehl 'MOV A,<expr>' als auch den Befehl
+       'MOV A,#<expression>' schon gibt !
+      Die Sonderzeichen die bei solchen Definitionen verwendet werden
+       k”nnen sind: '#@[{}]' und in besonderen F„llen '+-*/'.
+      (Weitere Beispiele -> Demofile: 'demo\80c552\makro\makro.asm')
+
+
+    LOCAL
+    PUBLIC <arg1>[,<arg2>[,..]]
+    ENDLOCAL
+    - Dient zum Begrenzen des Gltigkeitsbereiches von Variablen.
+    - Bei komplexeren Programmen ist es sinnvoll sie in kleinere
+      Bl”cke zu zerlegen und Variablen zu schaffen die nicht allen
+      anderen Modulen zug„nglich sind. Eine Methode dies zu erreichen
+      ist das Aufsplitten in mehrere Quellfiles, die erst am Ende
+      durch Linken verbunden werden. Eine andere Methode die auch
+      innerhalb eines Quellfiles angewendet werden kann ist mit den
+      Befehlen Local, Public und Endlocal realisierbar.
+
+      Beispiel 1: (Grundlagen Lokale Variablen)
+      -----------	CSEG AT 100
+			LOCAL		; Anfang des lokalen Bereichs
+			 PUBLIC Sub1	; 'Sub1' nach auáen sichtbar machen
+		Sub1	 JB P3.0,Sprung
+			 MOV A,#Wert	; Benutzen der lokalen Variable
+		Sprung	 Ret
+			ENDLOCAL	; Ende des lokalen Bereichs
+		Wert	EQU 27		; Globale Variable
+			MOV A,Wert
+			JB P4.0,Sprung
+			LCALL Sub1
+		Sprung	CLR C
+
+      Nach der Assemblierung:
+      ----------------------
+      64		CSEG AT 100
+      64        	LOCAL
+      64		 Public Sub1
+      64	Wert	 EQU 27
+      64 20B002 Sub1	 JB P3.0,Sprung
+      67 741B		 MOV A,#Wert
+      69 22	Sprung	 Ret
+			ENDLOCAL
+      6A E51B		MOV A,Wert
+      6C 20C003 	JB P4.0,Sprung
+      6F 120064 	LCALL Sub1
+      72 C3     Sprung	CLR C
+                
+    - Durch lokale Variablen k”nnen Konflikte die durch gleiche
+      Variablennamen entstehen vermieden werden.
+      Die Variable 'Sprung' tritt sowohl im lokalen Bereich als auch im
+      Globalen Bereich auf.
+    - Auf die globale Variable 'Wert' kann sowohl global als auch
+      lokal zugegriffen werden.
+    - Um wie im Beispiel ('Sub1') eine lokale Variable Global ansprechen
+      zu k”nnen, muá sie explizit als 'Public' deklariert werden.
+    - Lokale Bereiche k”nnen beliebig geschachtelt werden.
+    - Eine Verwendung der 'Public'-Deklaration macht die Entsprechende
+      Variable eine Lokalebene h”her bekannt.
+    - Das verwenden der Public-Anweisung im Globalen Bereich kann dazu
+      verwendet werden den Gltigkeitsbereich einer Variablen ber
+      das aktuelle File hinaus zu vergr”áern. (-> Linken !)
+    - Die entsprechende Variable ist dann nicht nur Global in Bezug
+      auf das momentane File, sondern Global in Bezug auf das gesamte
+      Programm.
+
+    OBJECT <obj_file>
+    - Mit diesem Befehl kann ein Objektmodul direkt in ein Programm
+      eingebunden werden, „hnlich dem Linken.
+
+    LIBRARY <lib_file>
+    - Mit diesem Befehl kann eine Library bereitgestellt werden die
+      zur Abs„ttigung offener Referenzen herangezogen wird.
+    - Es werden immer ganze Module eingebunden.
+
+    EXTERN <arg1>[,<arg2>[,..]]
+    - Mit diesem Befehl werden Referenzen zu anderen Objektmodulen beim
+      Assemblieren zun„chst ohne wirklichen Wert abges„ttigt, damit keine
+      Fehlermeldungen erzeugt werden. 'Extern' hat also nur den Sinn dem
+      Assembler mitzuteilen welche Variablen erst beim Linkvorgang, aus
+      einem anderen Modul einen Wert zugewiesen bekommen.
+    - Variablen die mit Extern deklariert wurden, werden auch herangezogen
+      um Module aus einer Library auszuw„hlen um sie anschlieáend
+      einzubinden ins Programm.
+
+
+
+9.Erstellen eigener Assembler-Tabellen
+**************************************
+    Die Konfigurationstabelle fr den Assembler (auch kurz 'Assembler-
+    Tabelle' genannt) ist eine elegante M”glichkeit fr
+    erfahrene Programmierer(innen) um mit diesem Assembler auch exotische
+    8-Bit / 16-Bit Prozessoren, (einige)Signalprozessoren, Bitslice-
+    Elemente oder Eigenbau-Ablaufsteuerungen programmieren zu k”nnen.
+
+    Weniger gebte Programmierer brauchen sich mit dem Innenleben
+    der Assemblertabelle (wenn sie es nicht wollen) nicht zu besch„ftigen.
+    Solche Programmierer verwenden einfach eine fertige Tabelle fr den
+    gewnschten Prozessor (wenn sie schon existiert !).
+
+    Doch nun zum Innenleben der Konfigurationstabelle.
+    - Die Tabelle ist Zeilenorientiert. Das bedeutet, daá jeweils das erste
+      Zeichen in einer Zeile welches kein Leerzeichen ist, festlegt was
+      mit dem Rest der Zeile zu geschehen hat.
+    - Zus„tzlich darf der Strichpunkt in jeder Zeile auftauchen, was zur
+      Folge hat daá der Rest der Zeile nach dem Strichpunkt als
+      Kommentar betrachtet (weggeworfen !) wird.
+    - Achtung: Im Gegensatz zur Programmebene kann in der Tabellenebene
+	       nur mit Integer-Ausdrcken und Zahlen gearbeitet werden !
+	       (Integer = 32-Bit Zahlen vom C-Typ 'long int')
+
+
+    In der vorliegenden Programmversion sind folgende Schlsselzeichen
+    definiert:
+	       '  <Apostroph> Meldezeilen
+	       ;  <Strichpunkt> Leitet Kommentar ein (just vor Fun !)
+	       f  Spezielle Fehlermeldungen definieren.
+	       .  <Punkt> Leitet eine Prozessorbefehldefinition ein.
+	       =  <Gleich> Leitet eine Labeldefinition ein
+	       o  <kleines O> Leitet eine Operatordefinition ein
+	       s  <kleines s> Segmentgruppen & Clusterdefinitionen
+	       :  <Doppelpunkt> Quelltextzeilen erzeugen
+	       t  Importieren einer anderen Assemblertabelle
+	       w  Wortbreite des Prozessors definieren
+
+    ###
+    #'#
+    ### Der Apostroph leitet Meldezeilen ein.
+
+    - Meldezeilen werden beim Starten des Assemblers auf dem Bildschirm
+      angezeigt und erlauben es Eigenheiten und Besonderheiten von
+      eigenen oder modifizierten Tabellen wieder ins Ged„chtnis des
+      Programmierers zu rufen wenn er die Betreffende Tabelle benutzt.
+    - Die Meldezeilen werden zur Dokumentation auch mit ins Listing
+      aufgenommen.
+    - Auf die eigentliche Assemblierung haben Meldezeilen keinen Einfluá.
+
+
+    ###
+    #;#
+    ### Der Strichpunkt leitet Kommentarzeilen ein.
+    - Auf die Assemblierung haben Kommentarzeilen keinen Einfluá.
+    - Kommentarzeilen dienen nur zur Orientierung in der Tabelle.
+    - Nicht zu viele Kommentarzeilen einfgen, da sie das lesen der
+      Tabelle etwas verlangsamen !
+
+
+    ###
+    #f#
+    ### Text fr Fehlermeldungen definieren.
+    - Beispiel:
+	    fmeldung1 Bitadressen sind hier nicht erlaubt.
+
+      In diesem Beispiel wird der Kennung 'meldung1' die Fehlermeldung
+      'Bitadressen sind hier nicht erlaubt.' zugewiesen.
+    - Das verwenden der Definierten Fehlermeldungen wird bei den
+      Prozessorbefehlen erl„utert. (->Befehl mit spezieller Fehlermeldung)
+
+
+    ###
+    #.#
+    ### Der Punkt leitet Prozessorbefehle ein.
+
+      Befehl ohne Argumente
+      ---------------------
+    - Prozessorbefehle werden fr den Assembler in Form von Mnemonischen
+      Abkrzungen definiert.
+      Beispiel 1: 'CLR C'
+		 - Befehl eines Prozessors zum l”schen des Carry-Bits
+	Der Prozessor selbst versteht diese Textsequenz natrlich nicht.
+	Aus diesem Grund muá diese Sequenz in den entsprechenden HEX-Code
+	umgesetzt werden den der Prozessor verarbeiten kann. Nehmen wir
+	an, daá der Hex-Code der den Prozessor veranlaát das Carry-Bit
+	zu l”schen '27h' ist. Die Anweisung daá der Assembler die richtige
+	Umsetzung durchfhrt lautet:
+				      .CLR C {27h:8}
+	- Die Zeichenkette 'CLR C' ist sofort klar.
+	- Die Eigentliche Umsetzungsanweisung muá in geschweifte Klammern
+	  gesetzt werden.
+	- Die Anweisungen in der geschweiften Klammer haben immer die
+	  Form <expr>:<bits>. Zun„chst der Wert und dann die Anzahl der
+	  Bits die fr diesen Wert verwendet werden sollen.
+
+      Befehl mit Argument
+      -------------------
+    - Das erste Beispiel war sehr einfach, verdeutlich aber schon die
+      Grunds„tzliche vorgehensweise bei der Umsetzung von Befehlen.
+      Im zweiten Beispiel tritt im Assembler-Befehl ein variables
+      Argument auf, welches bei der Umsetzung jeweils aktuell eingesetzt
+      werden muá.
+      Beispiel 2: 'MOV A,<arg>'
+		  - Befehl zum Laden des Akku mit dem Inhalt einer
+		    Speicherstelle
+	Nehmen wir an, es sei ein Befehl der eine 8-Bit Adresse
+	als Argument erwartet und als HEX-Code '33h' besitzt.
+	Umsetung:
+		  .MOV A,à {33h:8 @1:8}
+	- Die ersten 8-Bit werden auf 33h gesetzt.
+	- Das Argument 1 wird in der Definition mit '@1' angesprochen
+	  und direkt in weitere 8 Bits umgesetzt.
+	- Eine Verwendung des Befehls  'MOV A,10' wrde mit dieser
+	  Definition umgesetzt in '33 0A'.
+
+      Befehl mit Argumenten
+      ---------------------
+    - Das geht natrlich auch mit mehr als einem Argument.
+      Beispiel 3: 'ADD #<arg1>,<arg2>,<erg>'
+       Umsetzung: .ADD #à,à,à {34h:8 @2:8 @1:-8 @3:8}
+      Verwendung: ADD #10b,11,11+1
+	    Code: 340B020C
+	- Ver„ndern der Reihenfolge wie ben”tigt.
+	- Besonderheit -8 Bits beim Argument '@1'
+	  Bei allen bisher erwarteten Argumenten wurden Adressen bergeben
+	  die in jedem Fall positive Werte enthalten muáten und deshalb
+	  eine Fehlermeldung bei negativen Zahlen (wie sie vom Assembler
+	  erzeugt wird !) durchaus wnschenswert ist.
+	  Nicht so bei direkten Werten, hier kann der Programmierer
+	  durchaus einen negativen Wert (z.B. -3) verwenden der
+	  dann als Zweierkomplementzahl eingesetzt werden soll.
+	  Um eine Fehlermeldung des Assembler zu verhindern muá die Bit-
+	  zahl als negativer Wert angegeben werden. Der zul„ssige
+	  Wertebereich fr Argumente wird damit auf den Bereich von
+	  -128 bis +255 ausgedehnt. Bei einer anderen Bitzahl natrlich
+	  entsprechend.
+
+
+      Spezielles Argument @0 (Programmz„hler)
+      ----------------------
+      Beispiel 4: 'RJMP <ziel>'      (relativer Sprung)
+       Umsetzung: .RJMP à {0E4h:8 @1-@0-2:8}	;Achtung DEMO nicht optimal !
+      Verwendung: Label	RJMP Label	(Endlosschleife !)
+	    Code: E4FE
+	- Bei '@0' als Argument handelt es sich um den Programm-
+	  z„hler der speziell bei relativen Sprngen ben”tigt wird.
+	- Hier tritt jetzt wieder ein „hnliches Problem auf wie bei den
+	  direkten Werten. Die Differenz '@1-@0-2' kann bei Rckw„rts-
+	  Sprngen negativ werden und wrde damit eine Fehlermeldung aus-
+	  l”sen. Eine ':-8' anstelle von ':8' wrde das Problem der
+	  Fehlermeldung zwar beheben aber falsche Sprnge erzeugen.
+	  Grund dafr ist, daá der durch ':-8 erweiterte Wertebereich
+	  nun Sprnge zul„át die mehr als 127 Bytes nach vorne reichen.
+	  Eine L”sung des Problem bietet folgende Umsetzung.
+
+       bessere Umsetzung: .RJMP à {0E4h:8 (128+@1-@0-2)^80h:8}
+
+	- Mit dieser Umsetzung generiert der Assembler die richtigen
+	  Fehlermeldungen und l„át alle gltigen Werte zu.
+	- Fr <exp> in der Abbildung k”nnen durchaus auch komplexere
+	  Ausdrcke verwendet werden. Im Beispiel berechnet der Assembler
+	  bei der Umsetzung:  (	128 + <ziel> - PCounter - 2) EXOR 80h
+	- Wichtig ist, bei einer Umsetzung genau darauf zu achten, daá
+	  bei unzul„ssigen Werten eine Fehlermeldung generiert wird !
+
+    - Die Bitzahl der einzelnen Argumente muá nicht 8 sein !
+    - Die Gesamtzahl der Bits eines kompletten Befehls muá aber
+      durch acht ohne Rest teilbar sein !
+      Beispiel 5: 'JBS <adr>,<bit>,<ziel>'
+		  - relativer Sprung Sprung wenn ein bestimmtes Bit
+		    einer bestimmten Speicherstelle gesetzt ist.(80C196)
+       Umsetzung: .JBS à,à,à	 {7:5 @2:3 @1:8 (128+@3-@0-3)^80h:8}
+      Verwendung: Port	EQU 78h
+		  Label	JBS Port,3,Label  (Warten bis Port-Bit Nr.3 Low)
+	    Code: 2B78FE
+	   Bin„r: 0010 1011 0111 1000 1111 1110
+		  \    /\ / \ 	    / rel.Sprungadresse
+		   \  /  |   Speicherstelle
+		    \/	 Bitadresse
+		     Op-Code
+
+
+      Befehl mit variabler Codel„nge
+      ------------------------------
+    - Abh„ngig von der Gr”áe eines Arguments wird ein Befehl
+      erzeugt mit langer (16-Bit) oder kurzer (8-Bit) Adresse.
+      Beispiel 6: 'ADD A,<adr>'
+		  - wenn die Adresse kleiner als 256 ist soll automatisch
+		    ein Befehl mit Zero-Page-Adresse erzeugt werden.
+       Umsetzung: .ADD A,à {?@1>255{20h:8 @1:16}{21h:8 @1:8}}}
+      Verwendung: ADD A,374h   ; Adresse > 255 -> 3 Code-Bytes
+	    Code: 210374
+      Verwendung: ADD A,45h    ; Adresse < 256 -> 2 Code-Bytes
+	    Code: 2045
+    - Das allgemeine Format fr Bedingungen lautet:
+	  {?<bed1>{ wenn bed1 wahr ! }{ wenn bed1 falsch ! }}
+    - Bedingungen k”nnen beliebig geschachtelt werden.
+    - ABER !!  Diese Realisierung ist zwar kurz hat aber einen kleinen
+	       Nachteil - wenn sich der Wert des Argumentes welcher zur
+	       festlegung der Codel„nge fhrt w„hrend der Assemblierung
+	       „ndert, fhrt das zu einer Fehlermeldung:
+			     'Adressenfehler im Segment ...'
+	       die meist schlecht behebbar ist.
+    - Besser !
+       Umsetzung: .ADD A,à {?@1>255{"ADDL A,à"}{"ADDZ A,à"}}
+		  .ADDZ A,à {21h:8 @1:8}
+		  .ADDL A,à {20h:8 @1:16}
+    - Man erzeugt fr alle unterschiedlich langen Befehle einen eigenen
+      Mnemonic Code (ist bei vielen Prozessoren ohnehin vorgesehen !)
+    - Zum einen generiert der Assembler bei dieser Umsetzung eine
+      Fehlermeldung an der richtigen Stelle im Quelltext und zum
+      anderen kann die Fehlermeldung nun durch direkte Anwahl des
+      richtigen Befehls (durch den Programmierer) behoben werden.
+
+
+      Befehl mit Abkrzungen (Makros)
+      -------------------------------
+    - Da Prozessoren meist eine ganze Reihe Befehle mit gleichen oder
+      „hnlichen Argumenten besitzen ist es, speziell w„hrend der
+      Entwicklung der Tabelle, sinnvoll bestimmte Abbildungssequenzen
+      als Makros zu definieren.
+      Beispiel:   .!WR1    {@1&1:0 @1:8}   ; MAKRO: Word-Register
+		  .!WR2+   {@2&1:0 @2|1:8} ; MAKRO: Word-Register mit LSB
+		  .ADD à,[à]+	{66h:8 '!WR2+' '!WR1'}
+		  .ADDC à,[à]+	{0A6h:8 '!WR2+' '!WR1'}
+		  .CLR à	{1:8 '!WR1'}
+    - Damit erreicht man neben einer krzeren Schreibweise auch, daá sich
+      „nderungen an den Makros sofort auf alle Befehle auswirken die
+      diese Makros verwenden.
+
+
+      Befehl mit spezieller Fehlermeldung
+      -----------------------------------
+    - Damit Fehlermeldungen dem Programmierer einen Hinweis auf die
+      Fehlerursache geben k”nnen sollten bei prozessorspezifischen Fehlern
+      auch prozessorspezifische Fehlermeldungen produziert werden.
+      Beispiel:
+	      fa Arg1: Als GPR-Wort-Adresse sind nur R0-R15 zul„ssig.
+	      .CPL à {91h:8 (@1&0FFE1h)!=0FFE0h:0a (@1&01Fh)>>1:4 0:4}
+						 ^
+						 |
+					     Verbindung zur Fehlermeldung
+
+    - Normalerweise gibt der Assembler beim šberschreiten des Wertebereichs
+      fr ein Element eines Befehlscodes eine einzige immer „hnliche
+      Bereichsfehlermeldung aus, die als Zusatzinformation nur den Teil der
+      Tabellenzeile enth„lt in der der Fehler aufgetreten ist. Fr
+      Programmierer die sich mit den Tabellen nicht belasten m”chten, sind
+      diese Fehlermeldungen relativ nichtssagend. Lediglich die Orts-
+      angabe im Quelltext und die Tatsache daá mit einem Argument etwas
+      nicht stimmt k”nnen entnommen werden.
+      Wenn im Anschluá an die Bitzahl die eine Sequenz erzeugen soll eine
+      Verbindung zu einer Fehlermeldung angegeben ist, so wird bei einer
+      Bereichsberschreitung die entsprechende Fehlermeldung ausgegeben.
+    - Im obigen Beispiel dient die Sequenz '(@1&0FFE1h)!=0FFE0h:0a' sogar
+      nur zur šberprfung ob das Argument in einem bestimmten Wertebereich
+      liegt. Im Fehlerfall wird die entsprechende Fehlermeldung erzeugt.
+    - Damit kann je nach Aufwand den man treiben will eine Assemblertabelle
+      mehr oder weniger gute Hinweise fr den Programmierer geben der
+      sie verwendet.
+
+
+      Zugriff des Assemblers auf die Tabelle
+      --------------------------------------
+    - Der Assembler erkennt beim Einlesen einer Tabelle ob die Befehle
+      sortiert vorliegen oder nicht und greift dementsprechend sequentiell
+      oder ber einen intelligenten Algorithmus auf die Tabelle zu.
+    - Deshalb k”nnen w„hrend der Entwicklung der Tabelle die Befehle in
+      bunter Reihenfolge angegeben werden.
+    - Wenn die Tabelle vollst„ndig ist, sollte sie mit einem Texteditor
+      sortiert werden (nur den Befehlsteil !) damit der Assembler
+      schneller auf die Tabelle zugreifen kann.
+    - Dabei hat es sich als Zweckm„áig erwiesen vor dem Sortieren das
+      Zeichen 'à' (ASCII: Alt+224) durch die Zeichenfolge 'z!z' zu erstzen
+      und nach dem Sortieren diese Ersetzung wieder Rckg„ngig zu machen.
+
+
+
+
+    ###
+    #=#
+    ### Gleichheitszeichen leitet Labeldefinition ein.
+
+    - Beispiel: =Port_A 0FF01h
+      In diesem Beispiel wird dem Label 'Port_A' der Wert 0FF01h zugewiesen.
+    - Labeldefinitionen k”nnen dazu verwendet werden, dem Assembler
+      bestimmte feste Bezugsadressen des jeweiligen Assemblers
+      bekannt zu machen. Paradebeispiele sind dabei Adressbelegungen
+      fester Hardwarekomponenten die sich auf dem Chip des Prozessors
+      befinden oder feste Interrupt-Einsprungadressen.
+    - Wenn man viel fr einen Controller in einer bestimmten Hardware
+      Umgebung programmiert kann man deren feste Adressen auch in die
+      Tabelle mit aufnehmen. Dieser ge„nderten Tabelle sollte man
+      aber einen anderen Namen verpassen oder zumindest entsprechende
+      Meldezeilen einfgen damit ein anderer Programmierer auf diese
+      Tatsache hingewiesen wird.
+    - Diese Art von Definition fr feste Adressen bei einem Prozessor ist
+      zwar sehr einfach, hat aber den Nachteil, daá der Simulator/Debugger
+      nur den entsprechenden festen zugeordneten Wert anzeigen kann und
+      NICHT den Wert der unter dieser Adresse in einem bestimmten Segment
+      zu finden ist, was eigentlich wnschenswert w„re. Abhilfe schafft
+      hier eine Segmentbezogene Definition mit dem ':' Operator. Ein
+      Beispiel fr eine solche Definition ist in der Tabelle fr den
+      Prozessor 80C552 (TABELLEN\80C552.TAB) zu finden.
+
+
+    ###
+    #o#
+    ### <kleines o> Leitet eine Operatordefinition ein.
+
+    - Ohne zwingenden Grund sollte man sehr sparsam mit dieser
+      (sehr leistungsf„higen) M”glichkeit umgehen. (Wenn man den
+      Ausdrucks '5+4' verwendet und als Ergebnis 1 erh„lt ist das
+      nur mit sehr guten Argumenten zu erkl„ren !)
+    - Ein willkrliches Umdefinieren ist zwar m”glich aber nicht im
+      Sinne des Erfinders (Programmierers).
+    - Die meisten Assembler fr Prozessoren der MCS-51 Serie untersttzen
+      einen Operator zum ansprechen bestimmter Bitpositionen im
+      bitadressierbaren Bereich des Prozessors.
+
+      Beispiel: 23h.2  soll der Bitadresse 1Ah entsprechen
+
+    - Allgemein l„át sich die geforderte Umsetzung mit folgender
+      Abbildung erreichen:
+			   Bitadr := (Byteadr << 3) + Bitpos
+
+    - Diese Abbildung weiát man nun dem Punktoperator mit folgender
+      Definition zu:
+		      o. (@1<<3)+@2
+
+    - Jetzt macht der Assembler die gewnschte Umsetzung automatisch.
+    - Unglcklicherweise ist die Umsetzung in Bitadressen bei Beispiel
+      Prozessor nicht konsequent. Mit der Realisierten Umsetzung lassen
+      sich nur die RAM-Flags erreichen. Die Special-Funktion-Bits
+      ben”tigen folgende Umsetzung:
+
+			   Bitadr := Byteadr + Bitpos
+
+    - Die gewnschten Umsetzungen realisiert folgende Definition
+      fr beide Arten von Bitadressen. Zus„tzlich ist diese Definition
+      gleich so modifiziert, daá der Assembler an den Richtigen Stellen
+      Fehlermeldungen liefert.
+
+	    o. ((2=@1>>4)&(100h^@2+@1<<3))|((80h=@1&0FF87h)&(@2+@1))
+
+    - Im konkreten Fall sehr ntzlich - ABER !! nicht bertreiben !
+
+
+    ###
+    #s#
+    ### <kleines s> Definiert Segment-Gruppen (Cluster)
+    - FORMAT:
+	's <Name> <Start> <Ende> <Cluster-Nr> [-> <ZName> <Start> <L„nge>]'
+
+    - Um die Definition einer Segmentgruppe zu verstehen muá man zun„chst
+      wissen, daá HASM neben der Zuordnung der vom Programmierer erzeugten
+      Segmente zu bestimmten Segmentgruppen, diese Segmentgruppen wiederum
+      zu Gruppenclustern zusammenfaát.
+      Beispiel: 			 (Gilt so beim 80c552 von Philips!)
+				  Seg1\
+				  Seg2 \__
+				  Seg3 /   Codesegmente   \
+				  ... / 		   \ Gruppen-
+				  Seg4\ 		   / Cluster 0
+				  Seg5 \__ XDatensegmente / (Code erzeugend)
+				  Seg6 /
+				  ... /
+
+				  Seg7\
+				  Seg8 \__
+				  Seg9 /   Stacksegmente   \
+				  ... / 		    \
+				  Seg10\ 		     \ Gruppen-
+				  Seg11 \ 		     / Cluster 2
+				  Seg12	 \ 		    / (kein Code)
+				  ...	  \ Internsegmente /
+      Seg13\ 			  Sega	  /
+      Seg14 \__		(Mapping) Segb	 /
+      Seg15 /	Bitsegmente ->	  Segc	/
+      ...  / (Gruppencluster 1)	  ...  /
+
+      - Die Segmente Seg1-Seg15 sollen vom Programmierer angelegt worden sein.
+      - Die Segmente Sega-Segc werden vom Assembler nach einer entsprechenden
+	Mappingvorschrift in der Assemblertabelle erzeugt. Allgemein k”nnen
+	ber den Mappingmechanismus beliebige virtuelle Segmentgruppen
+	erzeugt werden, die dann ihre jeweilige Entsprechung im physikalisch
+	vorhandenen Speicher selbst erzeugen. Dabei kann sowohl ein Offset
+	als auch eine ge„nderte L„nge bercksichtigt werden.
+
+    - Das wichtigste der Gruppencluster ist das mit der Nummer 0.
+      Dieses und nur dieses Cluster erzeugt ausfhrbaren Maschinencode.
+    - Beispiel:   s CODE  0 10000h 0
+		  s XDATA 0 10000h 0
+		   \\	/  \\	 /  \
+		    \\ /    \\	/    Cluster-Nummer
+		     \\	     \\Endadresse der Segmentgruppe
+		      \\      Startadresse der Segmentgruppe
+		       \Bezeichnung der Segmentgruppe
+			Kennung fr Segmentgruppendefinition
+       - Dies ist eine typische Code-Cluster-Definition fr eine CPU die
+	 nur RAM-Speicher besitzt mit einer Adressbreite von 16-Bit.
+	 Erm”glicht werden damit Code- und Daten-Segmente die in bunter
+	 Reihenfolge auftreten k”nnen.
+    - Beispiel:   s CODE 0 1000h 0
+		  s DATA 1000 2000h 0
+       - Dies ist eine Code-Cluster-Definition fr eine CPU die 4k-Byte
+	 EPROM-Speicher ab  Adresse 0 und 4k-Byte RAM-Speicher beginnend
+	 ab Adresse 4096 besitzt.
+	 Mit dieser Definition werden Code und Datensegmente vom Linker
+	 sauber getrennt in die jeweils dafr vorgesehenen Bereiche.
+    - Als weitere Clustergruppe bietet sich bei Mikro-Controllern meist das
+      interne RAM an.
+    - Beispiel:   s INTERN 0 100h 1
+       - Damit k”nnen Belegungssegmente fr das interne RAM eines
+	 Prozessors (hier 256 Bytes ab Adresse 0) erzeugt werden.
+    - Zus„tzlich k”nnen noch virtuelle oder Pseudocluster realisiert werden.
+      Beispiel: Bitsegment beim 8051 !
+       - Bitadressen sind sind Werte die den Zugriff auf einzelne Bits
+	 im normalen internen Speicher des 8051 erlauben. Wenn also
+	 der Programmierer ein Einzelbit verwendet, muá der Assembler
+	 das entsprechende Byte im normalen internen RAM reservieren
+	 um eine doppelte Belegung zu verhindern.
+      Realisierung: s BIT 0 80h 2	-> INTERN 20h+@1/8 (@2/8)+1
+		    s INTERN 0 100h 3
+       - Mit dieser Definition wird jedes Segment vom Bit-Typ automatisch
+	 in ein Segment der Gruppe Intern gespiegelt. Dabei erfolgt eine
+	 Offsetanpassung und eine L„ngenanpassung.
+       - HASM bildet die Segmente beginnend bei den h”chsten
+	 Gruppennummern ab. Prinzipiell sind damit nur Abbildungen von
+	 h”heren zu niedrigeren Gruppennummern m”glich.
+    - Um den Assembler m”glichst flexibel zu gestalten ist es m”glich
+      (und auch sinnvoll !) einen physikalisch vorhandenen Adressraum
+      ber mehrere Namen ansprechen zu k”nnen. Damit der Simulator/Monitor
+      nicht alle Namen untersttzen muá wird fr das Simulatorfile
+      nur der Name der jeweils ersten Bezeichnung einer Clustergruppe
+      verwendet. Das bedeutet, daá der Debugger nur jeweils die erste
+      Bezeichnung fr Segmentcluster untersttzen muá.
+
+
+    ###
+    #:#
+    ### <Doppelpunkt> Quelltextzeilen erzeugen
+    - Alle Zeilen mit Doppelpunkt werden bei jeder Assemblierung mit der
+      entsprechenden Tabelle zu Begin in jeden Quelltext eingefgt.
+      (Natrlich ohne den Doppelpunkt !)
+    - Findet Verwendung um z.B. dem Assembler bestimmte Makros immer mit
+      einfgen zu lassen ohne im Quelltext st„ndig selbst dafr
+      sorgen zu mssen.
+      Beispiel:    Realisierung der USING-Anweisung fr den 80C51
+		:AR0	 EQU BankBase
+		:AR1	 EQU BankBase+1
+		:AR2	 EQU BankBase+2
+		:AR3	 EQU BankBase+3
+		:AR4	 EQU BankBase+4
+		:AR5	 EQU BankBase+5
+		:AR6	 EQU BankBase+6
+		:AR7	 EQU BankBase+7
+		:Using	 Macro Bank
+		:	 BSwitch BankBase,Bank
+		:	 Endmacro
+		:BSwitch Macro Tmp,Bank
+		:Tmp	 Set Bank*8
+		:	 Endmacro
+
+
+    ###
+    #t#
+    ### Eine andere Assemblertabelle importieren
+    - Mit dieser Anweisung kann eine Assemblertabelle aus mehreren Teil-
+      Tabellen aufgebaut werden.
+      Beispiel: Es gibt eine ganze Reihe von Prozessoren die auf dem
+		MCS-51 Kern aufbauen (80517/80535/80552/..). Diese
+		Prozessoren besitzen damit alle den gleichen Befehlssatz und
+		unterscheiden sich nur in Art und Lage ihrer SF-Register.
+		In so einem Fall bietet es sich an den eigentlichen
+		Befehlssatz nur einmal anzulegen und ihn fr alle
+		Controller mit dem gleichen Kern zu importieren.
+
+
+
+
+
+10.HASM Eigenheiten fr einzelne Prozessoren
+********************************************
+
+    Motorola-Assembler fr 68HC11:
+    ------------------------------
+      Das Portieren von Programmen vom Motorola-Assembler nach HASM
+      macht relativ viel Arbeit, da der Motorola-Assembler vor
+      Kommentar kein Kommentarzeichen ben”tigt !
+      Das Bedeutet, daá alle Kommentare im Quelltext mit einem ';'
+      kenntlich gemacht werden mssen !
+
+      Anmerkung des Autors:
+	Eine derartige Kommentarm”glichkeit zu implementiern wrde
+	eine spezielle 'Motorola'-Betriebsart des Assemblers bedeuten,
+	was ich aus grunds„tzlichen šberlegungen heraus ablehne.
+
+
+
+
+
+
+11.Formate des HEX-Files
+************************
+
+   Intel HEX-File: (INH)
+   ===============
+      Dieses Format enth„lt neben <Zeilenvorschub> und <Return>
+      nur darstellbare Zeichen und erleichtert damit den Umgang
+      mit diesem Format.
+
+    - Alle Zeilen haben folgendes Format:
+
+    :NNAAAARRHHHHHH...HHHHHHHHHCC
+
+    Dabei sind:
+    -----------
+      :		  = Kennung Anfang-Zeile
+      NN	  = Anzahl der Bytes in dieser Zeile (hex)
+      AAAA	  = Adresse des ersten Elementes in dieser Zeile (hex)
+      RR	  = Zeilen Typ (hex, 00=Normale Zeile 01=Letzte Zeile)
+      HH..	  = Datenelemente bestehend aus Hex-Zeichen
+		    Datenelemente k”nnenzur Zeit Bytes (2 Hexzeichen)
+		    oder Worte (4 Hexzeichen) sein.
+		    Maximal k”nnen in einer Zeile 32 Hexzeichen enthalten
+		    sein die Daten repr„sentieren.
+		    Bei 16-Bit Elementen kommt zun„chst das High- und dann
+		    das Low-Byte. Da sich die Adressfortschreibung auf
+		    Datenelemente bezieht, ist die Adressdifferenz bei
+		    vollen Zeilen mit 16-Bit-Elementen 8, w„hrend sie
+		    bei 8-Bit Elementen 16 (=10h) ist.
+      CC	  = Prfsumme zur Fehlererkennung (hex)
+
+    - Den Abschluá eines Files bildet folgende Zeichenkette
+
+		   ':00000001FF'
+
+    - Die Prfsumme wird nach folgender Formel berechnet:
+
+	    Summe =  Byte_anzahl + Adresse_High + Adresse_Low +
+		     Zeilentyp + (Summe aller Datenbytes)
+	Prfsumme =  ( ( -Summe ) & 0FFh )
+
+
+
+   Erweitertes Intel HEX-File: (INHX8M)
+   ===========================
+      (Fr Datenelemente gr”áer 8-Bit !)
+
+    - Im Gegensatz zum normalen Intel-Hex-File (INH) werden 16-Bit-
+      Elemente aufgeteilt in 8-Bit-Elemente. Um bei dieser Verdopplung
+      der Elementezahl eine eindeutige Adresszuweisung zu erhalten,
+      wird jede 16-Bit-Element-Adresse mit zwei multipliziert. Dadurch
+      erh„lt man zwischen zwei aufeinanderfolgenden 16-Bit-Elementen
+      eine freie Adresse. Diese freie Adresse wird nun dem High-Teil des
+      vorausgegangenen Elementes zugeordnet. Damit sin aber bei den
+      Datenelementen Low- und High-Teil gegenber dem normalen INH-Format
+      vertauscht (zun„chst LOW dann High-Teil).
+
+
+   Intel HEX32-File: (INHX32)
+   =================
+
+    - Enth„lt zus„tzlich Segmentadressrecords !
+
+
+
+
+
+
+
+11.Historie des Programms
+*************************
+
+  Version 1.0: - Fast v”llig Unbrauchbar durch einen in letzter
+		 Minute bei einer nderung eingebauten Fehler in
+		 der Labelsuche.
+
+  Version 1.1: - Erste einigermaáen brauchbare Version.
+
+  Version 1.2: - Begrenzung der anzuzeigenden Fehlermeldungen.
+	       - Bei 'MCS-51.TAB' Segmentdefinitionen (von 80c552)
+		 eingefgt. (kennt damit Bitsegmente)
+	       - Verschatelungstiefe bei Makros begrenzt (Stack-Overflow)
+	       - Quellzeilenauswertung: Befehle auch in Spalte 1 m”glich
+					Label nicht unbedingt in Spalte 1
+	       - Denkfehler bei der šberlappung von Mappingsementen mit
+		 normalen Segmenten ausgebgelt.
+	       - In Ausdrcken sind jetzt nahezu beliebig Leerzeichen m”glich.
+
+  Version 1.3: - Anwenderdefinierbare Fehlermeldungen eingebaut.
+	       - Strukturierte Tabellenorganisation (Importieren von Tabellen)
+
+  Version 1.4: - Real-Labels bei Tabellenerstellung werden wieder gel”scht !
+		 (Verursachte unter bestimmten Konstellationen eine
+		  Fehlermeldung bei der Symboltabellenerstellung)
+	       - Prefixes '$' und '%' fr Zahlen eingebaut.
+	       - Symboltabelle im Listing modifiziert und dabei
+		 Segmentreferenzen Namentlich eingefgt.
+
+  Version 1.5: - Beschr„nkung des SIM-Files auf die jeweils erste
+		 Cluster-Gruppenbezeichnung um den Simulator bersichtlicher
+		 ansprechen zu k”nnen.
+
+  Version 1.6: - Nur nicht leere Segmente ins Objektmodul schreiben
+		 Umschalten auf dann fehlende Segmente soll trotzdem m”glich
+		 sein ohne Fehlermeldung (Fehlermeldung nur bei Benutzung !)
+	       - Bug der bei INCLUDE das falsche Fehlerfile anzeigt behoben.
+	       - Auf Anregung zus„tzliche HEX-File Formate eingefgt.
+
+  Version 1.7: - Groáer Umbau bei Ausdrcken (jetzt Int, Float & String)
+	       - Schalter systematisiert
+
+  Version 1.8: - ??
+
+  Version 1.9: - Jetzt auch Datenbytes deren Wert erst beim Linken
+		 berechnet wird. (is vorher vergessn worn !)
+	       - Fehlercheck bei 'DB' verbessert
+	       - 'Lebenoch'-Zeichen nicht mehr so hektisch.
+               - Extended Adressierung beim 80c196 nachgebessert !
+                  (ist vorher uebersehen worden !)
+	       - ORG Expression darf jetzt '@0' enthalten (Align)
+		 (Dabei gleich einen weiteren Fehler beim Linken beseitigt)
+               - Nach Hinweis Inkonsistenz zwischen Programm und 
+                 Dokumentation bei #CPU beseitigt (Tabellenname haette in
+                 " oder < und > eingeschlossen werden muessen)
+
+
+12.Fehler des Programms
+***********************
+
+  Es gibt kein Programm ohne Fehler !
+
+  Trotz meiner Bemhungen strukturiert und systematisch zu programmieren
+  sind Fehler ab einer gewissen Komplexit„t des Problems nicht mehr zu
+  vermeiden. 
+  Wenn Fehler im Programm auftauchen dann lassen Sie es mich bitte wissen !
+  Sie k”nnen mir die Fehlersuche erleichern, wenn Sie:
+	     - den Fehler m”glichst umfassend Beschreiben !
+	     - ein Testfile mitgeben bei dem der Fehler auftritt
+  Ich werde dann mein m”glichstes tun um dem Fehler auf die Schliche 
+  zu kommen und ihn zu beseitigen.

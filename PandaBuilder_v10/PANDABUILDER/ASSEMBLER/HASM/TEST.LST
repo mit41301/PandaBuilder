@@ -1,0 +1,38 @@
+;   Tabellen-Assembler HASM   V2.1    3.5.98
+;   -----------------------
+;Verwendete Tabelle: C:\PROGRA~1\HASM\TABELLEN\PROTEUS.TAB
+; Assembler-Table for PROTEUS 2
+                
+                
+                ;*****************************
+                ;*** Peripherial Registers ***
+                ;*****************************
+                				DSEG 		PORTS
+                				REGORG	0000h
+                a				RMW		1
+                b				RMW 		1									
+                		
+                
+                ;*********************
+                ;*** Main Programm ***
+                ;*********************
+                				CSEG		CODE	
+       0 7BAA   start			LDR	R3, #0AAh
+
+Symbole(Global)     Wert/Offset    Art        Ausdruck/Segment
+----------------------------------------------------------------
+R3                  W=3            TAB=       A=3
+a                   O=0            ADRESSE    S=PORTS
+b                   O=1            ADRESSE    S=PORTS
+start               O=0            ADRESSE    S=CODE
+
+
+Segment-Tabelle:
+****************
+Segmentname                Startadr  Stopadr    L„nge
+============================================================================
+CODE                              0        1        1 Code   Beweglich C
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+PORTS                         10000    10002        2 Nocode Fest      D
+
+Keine Fehler gefunden.

@@ -1,0 +1,2289 @@
+		      ______________________
+		     /			    \
+		    /	H  H  SSS  I M	 M   \
+		   /	H  H S	   I MM MM    \
+		  /	HHHH  SSS  I M M M     \
+		  \ 	H  H	 S I M	 M     /
+		   \ 	H  H  SSS  I M	 M    /
+		    \________________________/
+		     \______________________/
+
+			    Anleitung
+	     Tabellenkonfigurierbarer Simulator/Monitor
+		 (Zugeh”riger Assembler -> HASM)
+
+		      (c) Dipl.-Ing. H.P. Hohe
+			91332 Heiligenstadt
+			    Burggrub 28
+
+			  November, 1994
+			   Version 1.1
+
+	      Private Nutzung, Nutzung in der Lehre und
+		 Weitergabe zu Testzwecken gestattet
+	  Kommerzielle Nutzung nur mit Genehmigung des Autors
+
+
+Inhaltsverzeichnis:
+
+	1.  Einleitung
+	2.  Leistungsmerkmale des Simulators/Debuggers
+	3.  Installieren
+	4.  Kommandozeilenaufruf
+	5.  Oberfl„che des Simulators/Monitors
+	6.  Stimulus-File
+	7.  Terminal-Fenster
+	8.  Status-Editor
+	9.  Synchrones Simulieren mehrerer Prozessoren
+       10.  Connection-Editor
+       11.  Scriptfiles
+       12.  Syntax von Ausdrcken im Simulator/Monitor
+       13.  Simulatortabelle erstellen
+       14.  Bausteintabelle erstellen
+       15.  Monitortabelle erstellen
+       16.  Historie des Programms
+
+
+1.Einleitung
+************
+
+    Zur Programmentwicklung ben”tigt man neben einem Assembler
+    zumindest noch eine Funktionsf„hige Platine mit dem gewnschten
+    Prozessor oder einen entsprechenden Simulator um die erstellten
+    Programme testen zu k”nnen.
+    Im 'lowcost'-Bereich liefern die Hersteller von Controllerboards
+    meist eine Art Terminalprogramm welches in Zusammenhang mit einem
+    Monitorprogramm (im Eprom des Controllers !) ein einfaches Testen
+    des Programms erm”glichen. Source-Level Debugging ist mit diesen
+    Hilfmitteln meistens nicht m”glich.
+    Im Profibereich (>2-5kMark) werden zum Testen sogenannte In-Circuit-
+    Emulatoren angeboten die ber eine spezielle (teuere) CPU das
+    testen in Echtzeit erm”glichen. Source-Leveldebugging ist
+    dabei der Standard.
+    Zum Testen bestimmter Programmteile k”nnen auch sogenannte Simulatoren
+    verwendet werden. Dieses Hilfmittel arbeitet, weil es den entsprechenden
+    Prozessor ohne Hardware nachbildet, in der Regel relativ langsam.
+    Der groáe Vorteil ist aber, daá man v”llig ohne Hardware auskommt.
+    'HSIM' erm”glicht zwei unterschiedliche Betriebsarten. Er arbeitet
+    zun„chst als Simulator. In dieser Betriebsart kann er bis zu vier
+    Prozessoren (gleiche oder unterschiedliche !) gleichzeitig Simulieren.
+    Diese Betriebsart ben”tigt keine zus„tzliche Hardware ist aber langsam.
+    Daneben kann 'HSIM' auch als eine Art intelligenter Monitor arbeiten.
+    In dieser Betriebsart ben”tigt 'HSIM' einen Funtionsf„higen Controller
+    inclusive Monitorprogramm mit dem er ber eine serielle Verbindung
+    kommunizieren kann. Die Art der Kommunikation mit dem Controller-
+    board muss HSIM in der Monitortabelle `.TAM` mitgeteilt werden.
+    Fr den Benutzer erscheint in beiden F„llen die gleiche 
+    Source-Level-Debug-Oberfl„che.
+
+
+
+2.Leistungsmerkmale
+*******************
+
+    + Tabellenkonfigurierbarer Simulator fr verschiedene Prozessoren
+	(Momentan drei Tabellen: 80C552, PIC16C57, 68HC11)
+    + Tabellenkonfigurierbarer Monitor fr verschiedene Prozessoren
+	(Momentan zwei Tabellen: - Eigenbau 80C552-Platine
+				 - Phytec miniCON-196 )
+    + Erm”glich das gleichzeitige synchrone Simulieren mehrerer Prozessoren
+    + Auch Hardwareverbindungen k”nnen Simuliert werden !!
+    + Fensterorientierte Oberfl„che (allerdings noch ohne Maus !)
+    + Identische Oberfl„che in beiden Betriebsarten (keine Umstellung)
+    + Einfaches Source-Level-Debugging in beiden Betriebsarten
+    + Setzen und l”schen von Breakpoints (bleiben erhalten beim Beenden)
+    + Singlestep-Betrieb (Im Simulatorbetrieb auch Rckw„rts m”glich !!)
+    + Watch-Ausdrcke werden im RUN-Modus st„ndig aktualisiert
+    + Watch-Ausdrcke bleiben beim Verlassen des Simulators erhalten
+    + Variablenfenster mit den aktuellen lokalen Variablen
+    + Registerfenster mit den Prozessorregistern
+    + Nachbildung von Hardwaresignalen durch Stimulusfile
+    + Ver„ndern von Registern und Fenstern w„hrend der Programmausfhrung
+    + Terminal-Fenster zur Entwicklung eines Talkers fr Monitorbetrieb !
+    + schnelle Einbindung einer Tabelle ins EXE-File durch Autor m”glich
+				     (-> 5-10 fache Geschwindigkeit)
+    + Hardwareverbindungen zwischen verschiedenen Prozessoren m”glich
+
+
+3.Installieren
+**************
+
+    Verzeichnisstruktur:
+    --------------------
+      ..\ ____ HASM __________ TABELLEN
+		     \
+		      \_______ DOC
+		       \
+			\_____ DEMO
+			 \
+			  \___ SCRIPT
+			   \
+			    \_ INIT
+
+      Inhalt: HASM     - Hsim.exe
+		       - Hsim.hlp  (Onlinehilfe fr Hsim)
+
+	      DOC      - Hsim.doc
+
+	      TABELLEN - 80C552.TAS   (= 80C552 Simulatortabelle)
+		       - 80C552.TAM   (= 80C552 Monitortabelle)
+		       - PIC16C57.TAS (= PIC16C57 Simulatortabelle)
+		       - 80C196KC.TAM (= 80C196KC Monitortabelle Phytec-Board)
+
+	      DEMO     - (diverse Test und Beispielprogramme)
+
+	      SCRIPT   - (globale Scriptfiles)
+
+	      INIT     - (Setup Support fr Editoren)
+
+
+    Einfacher Aufruf: - Wenn der Pfad fr HASM.EXE schon im 'Path'
+    -----------------	enthalten ist, so ist man bereits fertig !
+		      - Andernfalls einen Batch mit vollst„ndigem Pfad.
+
+
+
+4.Kommandozeile
+***************
+
+    Der Minimal-Aufruf des Simulators lautet:  HSIM sim_file1 [sim_file2] ..
+    -----------------------------------------
+    - Dieser Aufruf startet den Simulator. (keine Hardware n”tig !)
+      In dieser Betriebsart muá die entsprechende Simulator-Tabelle
+      vorhanden sein.
+    - 'sim_file' muá ein von HASM erzeugtes Simulator-File sein.
+      (HASM erzeut dieses File mit der Kommandozeilenoption: /Simulator)
+    - In der vorliegenden Version von HSIM k”nnen bis zu vier Prozessoren
+      gleichzeitig simuliert werden. Deshalb k”nnen nur bis zu vier
+      Simulator-Files angegeben werden.
+
+    Der Minimal-Aufruf des Monitors lautet: HSIM sim_file1 /Monitor
+    ---------------------------------------
+    - Dieser Aufruf startet den Monitor. In dieser Betriebsart muá an
+      einer seriellen Schnittstelle das entsprechende Controllerboard
+      ansprechbar sein. Zus„tzlich muá eine fr dieses Board geeignete
+      Monitortabelle vorhanden sein (-> Erstellen einer Monitortabelle).
+    - 'sim_file' muá ein von HASM erzeugtes Simulator-File sein.
+      (HASM erzeut dieses File mit der Kommandozeilenoption: /Simulator)
+
+    Option: /EGA oder /VGA
+    ----------------------
+    - Mit einer dieser beiden Optionen kann die Zeilenzahl des Bildschirms
+      vergr”áert werden. (/EGA -> 43 Zeilen) (/VGA -> 50 Zeilen)
+
+
+5.Oberfl„che des Simulators/Monitors
+************************************
+    Beim ersten Start von HSIM mit einem Simulatorfile werden automatisch
+    folgende Fenster ge”ffnet:	- Command-Fenster
+				- Register-Fenster
+				- Variablen-Fenster
+				- Source-Fenster
+    Command-Fenster: In diesem Fenster befindet man sich nach den Starten.
+		     Hier k”nnen eine ganze Reihe von Befehlen direkt
+		     ausgefhrt werden. Eine Liste der verfgbaren Befehle
+		     erh„lt man mit der Taste 'F1'. (Mit der Taste 'F1'
+		     erh„lt man in jedem Fenster eine kurze šbersicht der
+		     M”glichkeiten in einem Fenster)
+    Register-Fenster: Im Registerfenster werden normalerweise alle Prozessor-
+		      Register dargestellt. Register die sich seit der
+		      letzen Darstellung ver„ndert haben werden invers
+		      hervorgehoben. Der Inhalt dieses Fensters ist fr
+		      einen Prozessor immer gleich und wird nicht durch
+		      das Anwenderprogramm gesteuert. Welche Register wie
+		      und wo dargestellt werden wird in der entsprechenden
+		      Konfigurationstabelle festgelegt.
+    Variablen-Fenster: Im Variablenfenster werden anwenderprogramm-
+		       spezifische Daten und Variablen dargestellt. Dabei
+		       werden automatisch zun„chst immer nur die aktuellen
+		       lokalen Variablen angezeigt.
+    Source-Fenster: In diesem Fenster wird ein Ausschnitt des aktuellen
+		    Quellcodes angezeigt. Der aktuelle Stand des Programm-
+		    Counters wird im Quellcode angezeigt. Eventuell
+		    vorhandene Breakpoints werden angezeigt.
+    Stimulus-Fenster: In diesem Fenster wird der momentane Zustand aller
+		      Stimulusleitungen, der Zeitpunkt des n„chsten Wechsels
+		      und der n„chste Zustand angezeigt.
+
+    Programmlauf
+    ------------
+     'F8'  Durch Drcken der Taste 'F8' kann das Programm in einzelnen
+	   Schritten ausgefhrt werden. Das gleiche bewirkt auch der
+	   Befehl 'Trace 1' im Command-Fenster.
+	   Wenn mehrere Prozessoren geladen sind, wird immer ein Schritt
+	   beim aktuellen Prozessor ausgefhrt (Das kann bei den anderen
+	   Prozessoren je nach dem Verh„ltnis der Cycluszeiten keinen
+	   oder auch viele Schritte bedeuten !).
+
+     'F10' Die Taste 'F10' bewirkt fast das gleiche wie 'F8' nur bei
+	   einem CALL-Befehl wird die gesamte Routine in einem schnell
+	   durchlaufen. In der Betriebsart 'Simulator' gibt es auch eine
+	   Belegung fr SHIFT-'F10'. Damit lassen sich zuvor ausgefhrte
+	   Einzelschritte wieder zurcknehmen !
+
+     'F5'  Diese Taste bewirkt ein Starten des Programms. Der Simulator
+	   fhrt nun die Befehle mit der maximal m”glichen Geschwindigkeit
+	   aus, ohne die Fenster am Bildschirm zu aktualisieren. (Ausnahme
+	   ist ein eventuell offenes Watch-Fenster !)
+	   Im Monitorbetrieb fhrt der Controller das Programm jetzt in
+	   Echtzeit aus. Wenn der Monitor im Controller Interruptgesteuert
+	   arbeitet k”nnen Ausdrcke in einem eventuell offenem Watchfenster
+	   weiter aktualisiert werden.
+	   Durch drcken der Leertaste kann ein laufendes Programm wieder
+	   angehalten werden.
+	   'RUN' im Command-Fenster bewirkt das Gleiche.
+     'F9'  Wenn man sich im Source-Fenster befindet, so kann mit 'F9' ein
+	   Breakpoint gesetzt oder gel”scht werden.
+
+    Wechseln des Fensters
+    ---------------------
+    Jedes Fenster besitzt einen Kennbuchstaben der an den Namen des Fensters
+    angelehnt ist. 'R' steht fr Registerfenster, 'C' steht fr Command-
+    fenster und 'V' bedeutet Variablenfenster u.s.w.
+    (Ausnahme: 'T' bedeutet sTimulus-Fenster da 'S' schon fr Source-Fenster)
+    Durch Drcken von 'ALT' und der entsprechenden Fensterkennung wechselt
+    man in das jeweilige Fenster.
+			ALT-'C' -> Command-Fenster
+			ALT-'S' -> Source-Fenster
+			ALT-'V' -> Variablen-Fenster
+			ALT-'R' -> Register-Fenster
+			ALT-'W' -> Watch-Fenster (Nur wenn vorhanden !)
+			ALT-'M' -> Memory-Fenster (Nur wenn vorhanden !)
+			ALT-'I' -> stImulus-Fenster (Nur wenn vorhanden !)
+			ALT-'T' -> Terminal-Fenster (Nur wenn vorhanden !)
+    In der Betriebsart Simulator kann mit 'F6' und SHIFT-'F6' das aktuelle
+    Prozessormodul gewechselt werden wenn mehrere Prozessoren simuliert
+    werden.
+
+     'F1'  Hilfefunktion (Teilweise Kontextsensitiv !)
+
+     'F2'  Wechseln des Sourcemoduls
+
+     'Shift-F2'	Sprung im Sourcefenster an einen bereits existierenden
+		Breakpoint (ohne daá Programmbefehle ausgefhrt werden !)
+
+     'F3'  Wenn ein Stimulusfile aktiv ist, wird durch F3 das
+	   zugeh”rige Stimulusfenster Ein- und Ausgeschaltet. Die Ab-
+	   arbeitung des Stimulusfiles bleibt davon unberhrt.
+	   Beim drcken von F3 ohne aktivem Stimulusfile gleiches
+	   Verhalten wie beim drcken von Shift-F3 !
+
+     'Shift-F3'	Anw„hlen und ™ffnen eines neuen Stimulusfiles
+
+     'F4'  Wechseln in den Status-Editor (Verlassen mit <Esc> !)
+	    (Siehe auch -> Status-Editor)
+
+     'Shift-F4'	Wechseln in den Connection-Editor. In diesem Editor
+		k”nnen Verbindungen zwischen mehreren Modulen aber auch
+		Hardwareverbindungen einzelner Pins eines Prozessors
+		definiert werden. (Verlassen mit <Esc> !)
+		   (Siehe auch -> Connection-Editor)
+
+    Fensterspezifische Tasten:
+    --------------------------
+     'F7'  Fensterspezifische Funktionstaste
+
+	     Terminal: Eingabe eines Zahlenwertes der dann als Zeichen
+		       interpretiert wird.
+
+     'Tab' Fensterspezifische Belegung
+
+
+    Optionale Fenster
+    -----------------
+    Watch-Fenster: Durch den Befehl 'Watch <expression>' kann ein Ausdruck
+		   als Watch-Ausdruck definiert werden. Das Ergebnis dieses
+		   Ausdrucks wird dann st„ndig aktualisiert und dargestellt.
+		   Mit 'Clear Watch' werden alle Ausdrcke im Watch-Fenster
+		   gel”scht. Mit "Open Watch" und "Close Watch" kann das
+		   Watch-Fenster ge”ffnet oder geschlossen erden.
+		   L”schen eines einzelnen Ausdrucks im Watchfenster:
+		     - Mit Alt-'W' ins Watchfenster wechseln
+		     - Mit Cursor UP & DOWN den zu l”schenden Ausdruck
+		       in die oberste Zeile Bringen
+		     - 'Del'-Taste bet„tigen
+
+    Memory-Fenster: Durch den Befehl 'Memory <Segment>,<Start-Offset>'
+		    kann ein Hexdump eines Speicherbereichs angezeigt werden.
+		    Mit 'Close Memory' wird das Memory-Fenster wieder
+		    geschlossen.
+		    ndern der Anzeigeart:
+		     - Mit Alt-'M' ins Memoryfenster wechseln
+		     - Mit 'Tab' die Anzeigeart umstellen
+
+    Stimulus-Fenster: Das Stimulusfenster kann mit der Taste F3 Ein- und
+		      Ausgeschaltet werden. Allerding muá zuvor ein Stimulus-
+		      File ge”ffnet werden.(siehe auch -> Stimulus-File)
+
+    Terminal-Fenster: Das Terminalfenster kann mit dem Befehl
+		      OPEN TERMINAL ge”ffnet und mit dem Befehl
+		      CLOSE TERMINAL geschlossen werden.(->Terminal-Fenster)
+
+    Weitere Funktionen kann man der Onlinehilfe entnehmen ! Erreichbar
+    ist diese Hilfefunktion ber die Taste 'F1'.
+
+
+
+6.Stimulus-File
+***************
+    Mit Hilfe des Stimulusfiles kann man jedem Prozessor Hardwaresignale
+    an seinen Portanschlssen vorgeben. Zu diesem Zweck muá in einem
+    Stimulusfile der zeitliche Verlauf jedes vorzugebenden Signals
+    festgelegt werden.
+    In der ersten Zeile des Files muá festgelegt werden welche Signale
+    des Prozessors vorgegeben werden sollen. Die einzelnen Ausdrcke
+    mssen durch Leerzeichen voneinander getrennt sein.
+
+    Beispiel:  P1.0 P1.1 P3
+      In diesem Beispiel sollen zwei Einzelleitungen (Bit:0 und Bit:1 des
+      Port1) und ein ganzer Port (Port3) in seinem zeitlichem Verlauf vor-
+      gegeben werden. Natrlich drfen als Vorgabewerte fr Einzelleitungen
+      nur einstellige Dualzahlen verwendet werden. Bei P3 muá ein ganzes
+      Byte vorgegeben werden.
+
+    Wenn in der ersten Zeile, wie in diesem Beispiel, drei Signale vorgegeben
+    werden sollen mssen alle folgenden Zeilen im Stimulusfile vier Zahlen
+    enthalten. Die folgenden Zeilen mssen also alle einen Wert mehr
+    enthalten wie in der ersten Zeile als Vorgabewerte festgelegt wurde.
+    Der eine zus„tzliche Wert in jeder Zeile ist der erste Wert. Dieser
+    zus„tzliche Wert kann im Gegensatz zu allen anderen Werten eine Float-
+    Zahl sein, da sie die Zeit vorgibt ab der die in der gleichen Zeile
+    stehenden Werte am Prozessor anliegen sollen. Die Zeit wird in Sekunden
+    angegeben. ACHTUNG die Cycluszeit eines Prozessors ist defaultm„áig
+    auf eine Sekunde festgelegt !! ndern im Statusfenster (F4) !
+
+    Als Beispiel k”nnte ein Stimulusfile so aussehen:
+
+	P1.0 P1.1 P3
+    0	 0    1    5
+    10	 1    1    4
+    20	 0    0    3
+    30	 1    0    2
+    40	 0    1    1
+    50	 1    1    0
+
+    Nach jeweils 10 Sekunden „ndert sich das Siganl an P1.0
+    Nach jeweils 20 Sekunden „ndert sich das Signal an P1.1
+    Das Byte an P3 z„hlt im 10 Sekunden Takt von 5 bis 0 herunter
+
+    Ein derartiges File kann mit dem Befehl
+
+		      Stimulus <Filename>
+
+    in einer Simulation verwendet werden. Wenn der Befehl ohne Filename
+    ausgefhrt wird, wird ein eventuell aktives Stimulusfile beendet.
+    Man kann auch direkt von einem Stimulusfile auf einanderes Stimulus-
+    file berwechseln. Die Taste Shift-F3 fhrt auch den Stimulus-Befehl
+    aus, indem vorher nach einem Stimulusfilenamen gefragt wird.
+    Nach Ausfhrung des Befehls Stimulus <Filename> (oder Shift-F3)
+    wird automatisch ein Stimulusfenster ge”ffnet, welches die Zust„nde
+    der Stimulusleitungen veranschaulicht, den Zeitpunkt der n„chsten
+    und den Zustand nach der n„chsten nderung.
+    Durch mehrmaliges Bet„tigen der Taste F3 kann dieses Fenster sehr
+    schnell ein- und ausgeschaltet werden. Die Tatsache ob das Stimulus-
+    Fenster sichtbar ist oder nicht „ndert nichts an der Abarbeitung
+    des Stimulusfiles. Nachdem das gesamt File abgearbeitet worden ist,
+    wird eine entsprechende Meldung im Commandfenster ausgegeben und
+    das File geschlossen.
+    Jedes Stimulusfile kann zu beliebiger Zeit der Programmausfhrung
+    aktiviert werden. der Zeitpunkt zu dem das Stimulusfile ge”ffnet
+    wird, ist der Zeitnullpunkt im Stimulusfile. Man kann also
+    insbesondere ein Stimulusfile auch mehrmals hintereinander
+    abarbeiten.
+
+
+7.Terminal-Fenster
+******************
+    Mit Hilfe des Terminalfensters k”nnen auf der einen Seite alphanumerische
+    Ausgaben eines Controllers sichtbar gemacht werden und auf der anderen
+    Seite Tastatureingaben an einen Controller weitergeleitet werden.
+
+	  ____________		___Terminalfenster__________
+	 /	      \        /			    \
+	 | Controller |	       | Anzeigen der von	    |
+	 |   mit      |------->| Controller gesendeten	    |
+	 | Programm   |	       |     Zeichen		    |
+	 |	      |<-------| Abschicken von Tastatur-   |
+	 |	      |	       | eingaben an den Controller |
+	 \____________/	       \____________________________/
+			  /\
+			  ||
+			  ||
+		       Hin- und Rckverbindung des Terminal-
+		       fensters an den Controller
+
+    Derartige Verbindungen werden von sogenannten Monitorprogrammen
+    (Talkern) auf der Controllerseite benutzt um Informationen mit einem
+    PC (und damit HSIM als Monitor) auszutauschen.
+    Um ein Terminalfenster vollst„ndig an einen Controller anzuschlieáen
+    mssen insgesamt 4 Aktionen vorbereitet werden.
+
+      1.Der Controller muá ein Zeichen an das Terminalfenster bermitteln
+	k”nnen.
+      2.Es muá ein Busy-Ready-Mechanismus fr das šbermitteln eines Zeichens
+	an das Terminalfenster angelegt werden.
+      3.Es muá ein Busy-Ready-Mechanismus fr das šbermitteln eines Zeichens
+	vom Terminalfenster an den Controller angelegt werden.
+      4.Das Terminalfenster muá ein Zeichen (Tastatureingabe) an den
+	Controller bermitteln k”nnen (Wenn dieser das letzte Zeichen
+	bereits verarbeitet hat).
+
+    zu 1.: Das šbermitteln eines Zeichens an das Terminalfensters wird direkt
+	   zur Laufzeit im Simulator gemacht. Man erstellt mit Hilfe des
+	   Connektion-Editors eine Verbindung zwischen der Speicherstelle
+	   (oder Register), in der der Controller die Ausgabebytes hinein-
+	   schreibt und dem Terminalfenster. Voraussetzung ist nur, daá
+	   die entsprechende Speicherstelle in der Simulatortabelle als
+	   Ausgabeport vorbereitet ist.
+
+	   BEISPIEL aus 68HC11.TAS:   Ipo 0@-1 ?XData
+	       (Diese Zeile erlaubt es alle Speicherstellen im Segment 0
+		als Ausgabeports zu verwenden, eine besondere Maánahme ist
+		damit nicht mehr n”tig !)
+
+    zu 2.: Nach jedem Zeichen welches vom Terminalfenster entgegengenommen
+	   wurde, wird die Funktion 'SERIAL_ACCEPT' einmal aufgerufen.
+	   Mit Hilfe dieser Funktion k”nnen Flags bedient werden die dem
+	   Controller signalisieren, daá das Zeichen vom Terminalfenster
+	   richtig empfangen wurde. Die Funktion muá auch dann angelegt
+	   werden wenn der Mechanismuá selbst nicht verwendet wird.
+
+	   (Eigentlich w„re in dieser Richtung kein vollst„ndiger Busy-Read-
+	   Mechanismus n”tig, da durch den Simulator gew„hrleistet ist, daá
+	   ein an das Terminalfenster abgeschicktes Byte immer sofort abge-
+	   holt wird und somit in dieser Richtung kein Stau entstehen kann.
+	   Es sein denn, das Terminal Fenster ist nicht ge”ffnet.)
+
+    zu 3.: Wenn der Controller ein entsprechendes Flag zur Verfgung stellt
+	   an dem erkannt werden kann ob das letzte, an den Controller ber-
+	   mittelte Zeichen bereits abgeholt (verarbeitet) wurde, so kann
+	   dieses Flag dem Simulator ber die Funktion 'SERIAL_BUSY'
+	   zug„nglich gemacht werden. Diese Funktion muá einen von 0
+	   verschiedenen Wert zurckliefern wenn das letzte Byte vom
+	   Controller noch nicht abgeholt wurde. Wenn dieser Mechanismuá
+	   nicht benutzt werden soll oder vom Controller nicht zur Verfgung
+	   gestellt wird, so muá die Funktion trotzdem angelegt werden
+	   und sie sollte dann den Wert 0 zurckliefern.
+	   In diesem Fall kann das Terminalfenster aber nicht erkennen
+	   ob das letzte abgeschickte Zeichen bereits vom Controller
+	   verarbeitet worden ist oder nicht und berschreibt damit
+	   Zeichen die m”glicherweise noch nicht verarbeitet worden sind.
+
+    zu 4.: In dieser Richtung muá eine Funktion mit dem Namen 'SERIAL_SEND'
+	   in der Simulatortabelle definiert werden. Die Variable 'in'
+	   enth„lt das zu bermittelnde Zeichen. Gleichzeitig k”nnen
+	   (oder mssen) innerhalb dieser Funktion alle entsprechenden
+	   Flags des Controllers bedient werden die die Eingabe steuern.
+	   Dazu z„hlen vor allem Flags die dem Controller mitteilen, daá
+	   ein Zeichen angekommen ist und/oder ein Interruptflag welches
+	   die Ausfhrung einer Empfangsroutine ausl”st.
+
+    Das Terminalfenster wurde speziell zur Entwicklung und dem Test
+    von Monitorprogrammen (Talkern) auf der Controllerseite eingebaut.
+    Diese Programmteile k”nnen n„mlich auch sp„ter wenn HSIM in Verbindung
+    mit einer entsprechneden Hardware im Monitor-Modus l„uft nicht mehr
+    'berwacht' oder getestet werden, da sie vollst„ndig transparent im
+    Hintergrund ablaufen (sollten !).
+
+    VERSCHICKEN VON ZEICHEN DIE NICHT šBER TASTATUR ERREICHBAR SIND:
+    In vielen F„llen ist es n”tig, Zeichen oder besser Bytes zu
+    bertragen, die nicht direkt ber die Tastatur eingegeben werden k”nnen
+    oder vom Simulator fr andere Zwecke vorbelegt sind. Die fenster-
+    spezifische Funktionstaste F7 erlaubt, wenn sie in einem Terminalfenster
+    gedrckt wird das Eingeben beliebiger Werte als Ausdruck, die dann als
+    ein Zeichen interpretiert und an den Controller geschickt werden.
+
+
+
+8.Status-Editor
+***************
+    Der Statuseditor wird mit der Taste F4 aufgerufen.
+    Nach dem Aufruf werden alle wichtigen Zust„nde und Einstellungen des
+    jeweiligen Prozessormoduls angezeigt. Alle Eintr„ge die mit einem
+    '+' (Pluszeichen) beginnen k”nnen ver„ndert werden.
+    Zum Ver„ndern eines Wertes w„hlt man mit den Cursortasten UP & DOWN
+    die Zeile aus die ge„ndert werden soll und gelangt dann mit der
+    Return-Taste in den nderungsmodus. Nun kann der neue Wert eingegeben
+    werden. Beenden des nderungsmodus wieder mit der Return-Taste.
+    Im Statuseditor kann man mit den Cursortasten LINKS & RECHTS sehr
+    schnell das angezeigte Modul wechseln (natrlich nur wenn mehrere
+    Module geladen sind).
+
+    Cycluszeit: In dieser Zeile steht die Zeit die der betreffende
+		Prozessor fr einen Cyclus ben”tigt. Man kann hier die
+		Cycluszeit in Sekunden eingeben, dann liefert die
+		Lokalzeit immer einen absoluten Wert in Sekunden.
+		Wenn man die Standardeinstellung beibeh„lt, liefert die
+		die Lokalzeit die Anzahl der vergangenen Cyclen des
+		Prozessors. Bei einem Prozessor hat der Wert nur einen
+		Einfluá auf das eventuell verwendete Stimulusfile, denn
+		die Lokalzeit ist die Referenzzeit fr die Weiterschaltung
+		des Stimulusfiles. Das bedeutet, daá die Cyclenzeit
+		auf das Stimulusfile abgestimmt sein muá.
+		Wenn mehrere Prozessoren simuliert werden, so legen die
+		Cyclenzeiten das Verh„ltnis der Ausfhrungsgeschwindigkeiten
+		fest (z.B.: Zwei gleiche Prozessoren; Cycluszeit_A=1;
+		Cycluszeit_B=3; Bedeutet, daá der 2.Prozessor 3-mal so
+		schnell l„uft wie der erste). Bei unterschiedlichen
+		Prozessoren muá in der Regel mindestens ein Cyclenwert
+		angepasst werden, damit es bestimmten realen Verh„ltnissen
+		entspricht.
+    Autoload: Dieser Wert ist praktisch immer auf ON und besagt, daá das
+	      betreffende Prozessormodul beim n„chsten mal automatisch
+	      geladen wird. Wenn nur ein Prozessor simuliert wird, so ist
+	      diese Angabe praktisch bedeutungslos.
+	      Wenn mehrere Module geladen sind, so kann man durch umstellen
+	      dieses Wertes auf OFF den Simulator dazu veranlassen ein
+	      bestimmtes Modul beim n„chsten Start nicht mehr zu laden.
+	      (weitere Infos -> Simulieren mehrerer Prozessoren)
+    Stimulus: (und die auf Stimulus folgende Zeile !)
+	      Diese beiden Zeilen zeigen den Stimuluszustand.
+	      In der ersten Zeile wird nur angezeigt ob momentan ein
+	      Stimulusfile aktiv ist (ON) oder nicht (OFF).
+	      Die zweite Zeile zeigt den Namen des Stimulusfiles.
+    Debugmode: (Ist noch nicht vollst„ndig implementiert !)
+	      INTERFACE: Zeigt alle internen Aufrufe von Interfacefunktionen
+			 im Commandfenster an.
+	      BAUM: Zeigt die Ausgefhrte Funktion jedes Befehls im
+		    Commandfenster an. (Nur wenn nicht OVERLAY !)
+    Terminal: Zeigt den Status des Terminalfensters an.
+	      LEcho: Lokales Echo aller im Terminalfenster eingegebener
+		     Zeichen (sonst kein lokales Echo !)
+	      Hexmode: Nicht darstellbare Zeichen werden hexadezimal
+		       angezeigt (sonst Dezimal)
+	      Default ist kein Lokales Echo und dezimale Darstellung !
+    Overlay: Wenn in dieser Zeile eine von 0 verschiedene Zahl steht, so ist
+	     beim betreffenden Modul ein Overlay aktiv. Wenn ein Overlay
+	     aktiv ist, so werden nderungen die man in einer Simulator-
+	     tabelle am Befehlsbaum oder an den Cyclenanweisungen macht
+	     nicht Wirksam, da die im Overlay befindlichen Teile verwendet
+	     werden. Ein vorhandenes Overlay kann durch auskommentiern
+	     der 'O'-Zeile in der Simulatortabelle stillgelegt werden.
+	     (-> Erstellen einer Simulatortabelle !)
+    Die restlichen Zeilen sind nur fr den Autor von Interesse und k”nnen
+    von einer Programmversion zur n„chsten ihr Aussehen ver„ndern !
+
+
+9.Synchrones Simulieren mehrerer Prozessoren
+********************************************
+    Mit HSIM ist es m”glich mehrere Prozessoren synchron zu simulieren und
+    damit auch eventuelle Wechselwirkungen zwischen ihnen (->Connections).
+
+    STARTEN EINER MULTIPROZESSORSIMULATION:
+    Zu diesem Zweck bersetzt man zun„chst alle Programme der beteiligten
+    Prozessoren getrennt, so daá fr jeden zu simulierende Prozessor ein
+    abzuarbeitendes Programm ('.SIM'-File) bereitliegt.
+    Nun startet man den Simulator ganz normal mit EINEM der bereitligenden
+    Programme. Alle weiteren Programme (Prozessoren) l„d man nun
+    nacheinander mit dem Befehl 'LOAD <SIM-Name>' im Commandfenster.
+    Fr jedes Modul erscheinen beim Laden zumindest das entsprechenden
+    Source-Fenster. Weitere Fenster k”nnen bei Bedarf mit
+    OPEN <Fenstername> ge”ffnet werden.
+
+    ABARBEITUNGSGESCHWINDIGKEIT DER PROZESSOREN:
+    Wenn nur ein Prozessor simuliert werden soll, so spielt es in der
+    Regel keine Rolle welche Zeit, absolut gesehen, w„hrend eines
+    Prozessorcycluses vergeht (Ausnahme Stimulusfile). Wenn mehrere
+    Prozessoren gleichzeitig synchron simuliert werden sollen muá hingegen
+    genau festgelegt werden wie schnell jeder Prozessor laufen soll oder
+    zumindest in welchem Verh„ltnis die Geschwindigkeiten zueinander stehen
+    sollen. Um die absolute Geschwindigkeit eines Prozessors festzulegen
+    muá im Statuseditor (Taste F4) die Cycluszeit eingestellt werden.
+    Defaultm„áig ist dieser Wert auf eine Sekunde pro Cyclus eingestellt.
+    Die Cycluszeit eines Prozessors ergibt sich aus der Taktfrequenz des
+    Prozessors und der Anzahl an Taktcyclen die der betreffende Prozessor
+    fr einen Maschinencyclus ben”tigt. (z.B.: Der MCS-51 Kern des 80C552
+    ben”tigt 12 Taktcyclen fr einen Maschinencyclus, bei einer Taktfrequenz
+    von 6 MHz ergibt sich eine Cycluszeit von 5us)
+
+    AKTUELLES MODUL:
+    Im Zusammenhang mit der Simulation mehrerer Module bekommt der linke
+    untere Rand des Command-Fensters eine wichtige Rolle. Er zeigt n„mlich
+    das aktuelle Modul in Form einer Zahl an. Durch das Laden der weiteren
+    Module „ndert sich nichts am aktuellen Modul es sollte weiterhin auf
+    'Modul 0' stehen. Mit der Taste F6 kann man zyklisch alle Module zum
+    aktuellen Modul machen. Aktuelles Modul bedeutet so viel wie oberstes
+    oder gerade vom Anwender zug„ngliches Modul. Alle Modulspezifischen
+    Befehle beziehen sich auf dieses aktuelle Modul. Beispielsweise das
+    setzen eines Breakpoints mit der Taste F9 zeigt im Programmtext des
+    aktuellen Moduls die gewnschte Wirkung. Auch der mit Shift-F4 aufzu-
+    rufende Connection-Editor zeigt immer nur die Verbindungen des aktuellen
+    Moduls an (Alle Verbindungen werden in dem Modul verwaltet in dem sie
+    ihr(e) Output-Pins besitzen). Das Erzeugen eines Watchausdruckes
+    bezieht sich auf das aktuelle Modul u.s.w.
+
+    SINGEL-STEP:
+    Das drcken der Taste F10 (oder F8) fr einen Einzelschritt aus im Bezug
+    auf das aktuelle Modul. Abh„ngig von der relativen Geschwindigkeit der
+    Prozessoren kann dies Bedeuten, daá bei einem anderen Prozessor
+    mehrere oder auch berhaupt kein Schritt ausgefhrt wird. Breakpoints
+    machen sich natrlich in jedem Fall, auch in einem anderen Modul
+    bemerkbar !
+
+    DAS LADEN EINES MODULS RšCKGNGIG MACHEN:
+    Es gibt keine M”glichkeit ein geladenes Modul direkt wieder zu l”schen !
+    ABER: Im Status-Editor gibt es eine Zeile mit der Bezeichnung
+	  'Autoload', die normalerweise auf 'ON' steht. Durch Anw„hlen
+	  dieser Zeile im Status-Editor und bet„tigen der RETURN-Taste
+	  kann dieser Wert auf 'OFF' umgestellt werden. Wenn nun der
+	  Simulator verlassen und wieder neu gestartet wird, so wird das
+	  betreffende Modul nicht wieder automatisch geladen. Es k”nnen
+	  beim erneuten Starten Fehlermeldungen auftreten, die Bezug
+	  nehmen auf das nun fehlende Modul. Diese Fehlermeldungen mssen
+	  mit SPACE Quittiert werden.
+
+    VERBINDUNGEN MIT DER UMWELT: -> Connection-Editor
+
+
+
+10.Connection-Editor
+*******************
+    Wie der Name (Connection = Verbindung) schon sagt geht es an dieser
+    Stelle  um einen Editor mit dem man Verbindungen herstellen, l”schen
+    oder „ndern kann. Dies ist besonders dann von Interesse wenn mehrere
+    Prozessoren gleichzeitig simuliert werden oder Ausgaben an einen
+    Portbaustein simuliert werden sollen.
+
+    Beispiel 1:
+      Bei einem Prozessor ist einer seiner Ausgangspins mit einem seiner
+      Eingangspins direkt verbunden.
+
+	Prozessor A	       Prozessor A
+	 Output-Pin ---------- Input-Pin
+
+      In diesem Beispiel muá, wenn der Programmierer auf das Output-Pin
+      zugreift und dessen Zustand „ndert, im selben Moment auch der Pegel
+      des Inputpins seinen Zustand „ndern. Es ist also eine 'Hardware'-
+      Verbindung (Connection) notwendig.
+
+    Beispiel 2:
+      Es werden zwei Prozessoren simuliert bei denen der eine Prozessor
+      dem anderen ber eine Hardwareverbindung ein Signal (Interrupt ?)
+      geben soll um dort eine Aktion auszul”sen.
+
+	Prozessor A	       Prozessor B
+	 Output-Pin ---------- Input-Pin (kann auch Interrupteingang sein)
+
+      In diesem Beispiel muá, wenn der Programmierer auf das Output-Pin
+      des Prozessors A „ndert das Inputpin des Prozessors B auch seinen
+      Zustand „ndern. Es ist wiederum eine 'Hardware'-Verbindung
+      (Connection) notwendig.
+
+    Zum Herstellen solcher Hardwareverbindungen ist der Connection-
+    Editor da. Alle Pins die beim jeweiligen Prozessor als Ausgabepins
+    dienen k”nnen (und in der Tabelle als solche angemeldet sind) k”nnen
+    im Connectioneditor mit allen anderen Eingabepins aller Prozessoren
+    in der Simulation verbunden werden.
+
+    Um das Vorgehen zum Erzeugen einer Verbindung im Connectioneditor
+    zu erkl„ren, soll die Verbindung des Beispiels 1 erzeugt werden.
+
+      1.zun„chst muá der Simulator normal gestartet werden
+	  ('HSIM <SRC-File>')
+      2.Starten des Connection-Editors mit Shift-F4 (oder Befehl 'Connect'
+	im Command-Fenster). Wenn die Tastenbelegung nicht bekannt ist
+	dann 'Tasten' im Command-Fenster eingeben und F1 drcken.
+	(oder 'Hilfe Tasten' und dann Return)
+	Man gelangt damit, da noch keine Verbindung definiert ist,
+	automatisch in ein Auswahlfenster in dem alle Output-Pins des
+	simulierten Prozessors angezeigt werden.
+      3.Mit Hilfe der Cursortasten UP & DOWN das gewnschte Output-Pin
+	ausw„hlen und dann mit Return best„tigen.
+	Wenn es sich beim gew„hlten Output-Pin direkt um ein Einzelpin
+	gehandelt hat, so geht es jetzt weiter mit Punkt 7. Im anderen Fall
+	handelt es sich um eine Dummybezeichnung die fr alle Arten von
+	Memorymapped I/O verwendet werden kann. In diesem Fall geht
+	es mit dem n„chsten Punkt weiter.
+      4.Nun muá die Memoryadresse angegeben werden unter der sich das
+	Ouput-Port befinden soll. Der zul„ssige Adressbereich wird im
+	Titel des Fensters angezeigt ! Wenn die gewnschte Adresse nicht
+	angew„hlt werden kann, so ist das nur ein Hinweis darauf, daá
+	in der Simulatortabelle fr den verwendeten Prozessor nicht der
+	gesamte m”gliche Adressraum des Prozessors allokiert wird.
+	Nachdem eine gltige Memoryadresse angegeben und mit Return
+	best„tigt wurde gelangt man in die Startbit-Auswahl.
+      5.Startbitauswahl: Memorymapped bedeutet daá an der angegebenen
+	Adresse immer mehrere (meist 8) Bits angesprochen werden k”nnen.
+	Mit dem Startbit wird die Bitposition ausgew„hlt die als Output-Pin
+	dienen soll (LSB=0).
+      6.Wem bei Punkt 5 die Bezeichnung Startbit fr das auszuw„hlende Bit
+	etwas komisch vorkommt der hat im Prinzip recht, bekommt jetzt
+	aber die Erkl„rung. Bei Memorymapped I/O Verbindungen k”nnen
+	neben Einzelbits in einer 'Verbindung' auch mehrere Leitungen
+	gleichzeitig gezogen werden. Voraussetzung ist allerdings, daá
+	sie auf einer Adresse und dort direkt nebeneinander liegen,
+	sowohl im Output-Prozessor als auch im Input-Prozessor !
+	Bei Einzelverbindungen muá die Anzahl der Bits somit auf 1
+	gesetzt werden. Wenn mehrere Bits ausgew„hlt werden, so ist das
+	unter Startbit angegebene Bit das erste und die in Richtung
+	h”herer Bitpositionen folgenden sind die weiteren.
+      7.Nun erscheint ein Auswahlfenster welches alle gerade im Simulator
+	befindlichen Module zur Auswahl anzeigt. Man kann das gewnschte
+	Modul ausw„hlen mit dem eine Verbindung hergestellt werden soll.
+	Wenn, wie in diesem Beispiel, nur ein Modul geladen ist, so wird
+	auch nur dieses angezeigt und kann direkt mit Return best„tigt
+	werden.
+      8.Nun wird ein Auswahlmen angezeigt, welches alle Inputpins des
+	gew„hlten Moduls enth„lt. Das gewnschte Modul ausw„hlen und mit
+	Return bet„tigen. An dieser Stelle ist auch eine Dummybezeichnung
+	m”glich die fr Memorymapped I/O steht und fr eine vollst„ndige
+	Festlegung noch eine Adresse und ein Startbit ben”tigt (Anzahl
+	der Bits ist bei der Outputdefinition bereits festgelegt worden).
+      9.Man hat nun eine Verbindung vollst„ndig definiert und befindet sich
+	im Connectioneditor. Das Fenster zeigt alle Verbindungen an die
+	definiert sind. Mit den Cursortasten UP & DOWN kann man eine
+	Verbindung ausw„hlen und mit der DEL-Taste l”schen.
+	Eine weitere Verbindung kann man definieren indem man mit der
+	DOWN-Taste so weit nach unten geht bis man im Auswahlmen fr
+	das Output-Pin ist und dann weiter wie unter Punkt 3 verf„hrt.
+
+    Der Connection-Editor kann beliebig mit Shift-F4 aufgerufen und mit ESC
+    verlassen werden ohne daá sich etwas an den Verbindungen „ndert.
+
+    Einmal definierte Verbindungen bleiben auch beim Verlassen des
+    Simulators erhalten.
+
+
+
+11.Scriptfiles
+**************
+    Mit Scriptfiles (=Tastaturmakros) lassen sich Tastenfolgen, die immer
+    wieder ben”tigt werden, sehr einfach in ein File (Scriptfile) ablegen
+    und anschlieáend beliebig oft (auch innerhalb eines anderen Script-
+    files) wiederholen.
+    Angenommen man will sich w„hrend der Programmentwicklung einen 100
+    Zeichen langen Bereich im Codespeicher ab Adresse 1200h immer wieder
+    in das File f:\Testdat.dat ablegen. Dazu ist der Befehl
+
+			     Datfile 0,1200h,100,f:\Testdat.dat
+
+    n”tig. Damit man nicht jedesmal diese lange Befehlszeile eingeben
+    muá, kann man sich ein entsprechendes Scriptfile anlegen. Aus
+    naheliegenden Grnden w„hlt man fr das Scriptfile einen kurzen Namen.
+    Hier im Beispiel soll der Name 'DF' verwendet werden. Um das
+    Scriptfile zu erzeugen geht man folgendermaáen vor. Zun„chst wird
+    mit der Zeile
+
+	     Createscript DF<Ret>
+
+    die Scriptaufzeichnung gestartet. Im Statusbereich (rechter unterer
+    Rand) des Commandfensters sind jetzt die Zeichen 'Sw' fr (S)cript(w)rite
+    zu sehen. Sie signalisieren, daá momentan alle Tastendrcke aufgezeichnet
+    werden.
+    Der gewnschte Inhalt des Scriptfiles kann nun direkt angegeben werden.
+    Hier im Beispiel mit der Zeile:
+
+	     Datfile 0,1200h,100,f:\Testdat.dat<Ret>
+
+    Um die Scriptaufzeichnung zu beenden muá nun die <ESC>-Taste bet„tigt
+    werden. Die Zeichen 'Sw' im Statusbereich des Commandfensters sind
+    jetzt wieder verschwunden.
+    Es existiert nach dieser Prozedur im aktuellen Verzeichnis ein File
+    mit dem Namen 'DF.SCR'.
+    Ausgefhrt wird das Scriptfile mit der Zeile
+
+	     Script DF
+
+    Da der Name des erzeugten Scriptfiles nicht mit einem Simulatorbefehl
+    identisch ist, kann das Scriptfile auch mit der Zeile
+
+	     DF<Ret>
+
+    ausgefhrt werden. Es handelt sich beim definierten Scriptfile also
+    praktisch um einen neuen Simulatorbefehl. Dies kann man auch dazu
+    benutzen, sich Abkrzungen fr Simulatorbefehle zu definieren.
+    Um z.B. alle Ausdrcke im Watchfenster zu l”schen muá man den Befehl:
+
+	   clear watch
+
+    eingeben. Die Abkrzung 'cw' fr diesen Befehl erzeugt man mit der
+    folgenden Vorgehensweise:
+
+	   createscript cw<Ret>
+	   clear watch<Ret>
+	   <Esc>
+
+    Jetzt kann der Befehl 'clear watch' mit der Tastenfolge 'cw<Ret>'
+    ausgel”st werden.
+    Es k”nnen auch Scriptfiles erstellt werden, die beim Aufrufen Argumente
+    erwarten. Dazu geht man folgendermaáen vor. Als Beispiel soll der
+    Befehl 'Watch <Expression>' durch die Befehlszeile 'w <Expression>'
+    aufgerufen werden k”nnen.
+    Beim Starten der Aufzeichnung fr ein Scriptfile mit Argumenten mssen
+    gleich, entsprechend der gewnschten Anzahl an Argumenten, Argumente
+    angegeben werden. Fr das Beispiel kann die Befehlszeile
+
+	   createscript w 0@0<Ret>
+
+    verwendet werden. Der Ausdruck '0@0' steht dabei fr ein beliebiges
+    gltiges Argument welches w„hrend der Aufzeichnung des Scripts als
+    tats„chliches Argument verwendet werden kann.
+    Jetzt wird der abzukrzende Befehl angegeben.
+
+	   watch
+
+    Dabei darf das eine Leerzeichen direkt nach 'watch' nicht vergessen
+    werden. An der Stelle an der das Argument eingesetzt werden soll, drckt
+    man einfach die fensterspezifische Funktionstaste F7. Dadurch wird
+    ein Fenster ge”ffnet welches alle vorhandenen Argumente zur Auswahl
+    anbietet. Man w„hlt mit den Cursorsteuertasten das gewnschte Argument
+    aus und best„tigt es mit der <Ret>-Taste. Das ausgew„hlte Argument
+    wird automatisch in der Commandozeile eingefgt. Bei der Abarbeitung des
+    Scriptfiles wird sp„ter natrlich das jeweils aktuelle Argument
+    eingefgt. Der Cursor steht im Beispiel jetzt am Ende der Commandozeile
+    mit folgendem Inhalt:
+
+	   watch 0@0
+
+    Durch Bet„tigen der <Ret>-Taste wird der Befehl schlieálich noch ausge-
+    fhrt. Abschlieáend wird mit des <Esc>-Taste die Scriptaufzeichnung
+    beendet. Das Scriptfile ist jetzt bereit zur weiteren Benutzung.
+    Der Aufruf erfolgt entweder durch
+
+	   script w <Expression>
+
+    oder durch
+
+	   w <Expression>
+
+    Bei solchen Scriptfiles k”nnen natrlich auch meherere Argumente
+    verwendet werden. Eine Begrenzung erfolgt durch die Maximall„nge von
+    255 Zeichen fr Commandzeilenbefehle.
+    Ein einmal definiertes Scriptfile kann bis zu einer Schachtelungstiefe
+    von 8 auch innerhalb anderer Scriptfiles verwendet werden.
+    Diese werden nicht in das aktuelle Scriptfile eingefgt, sondern
+    aufgerufen. Das hat zur Folge, daá sp„tere nderungen an Scriptfiles,
+    die innerhalb von anderen Scriptfiles verwendet werden sich auch dort
+    sofort auswirken.
+    Grunds„tzlich werden Scriptfiles immer lokal erzeugt. Das bedeutet, daá
+    sie nur innerhalb des aktuellen Projekts direkt verwendet werden k”nnen.
+
+    Bei der Ausfhrung von Scriptfiles wird, wenn kein Pfad angegeben ist,
+    zuerst im aktuellen Verzeichnis nach dem gewnschten Scriptfile gesucht.
+    Wenn das gewnschte Script dort nicht existiert, wird im Unterverzeichnis
+    'HASM\SCRIPT' nach dem gewnschtenScript gesucht. Damit k”nnen 'Globale'
+    Scriptfiles definiert werden, die in allen Projekten verfgbar sind.
+    Solche global verfgbaren Scriptfiles mssen sich in diesem Verzeichnis
+    ('HASM\SCRIPT') befinden.
+    Durch verschieben oder kopieren eines lokal erstellten Scriptfiles in
+    das Unterverzeichnis 'HASM\SCRIPT' wird ein lokales Scriptfile global
+    verfgbar. Dieses Scriptfile kann danach global, das heiát von allen
+    Projekten verwendet werden. Dies ist insbesondere fr Befehlsabkrzungen
+    von Vorteil.
+    Aus der Suchreihenfolge ergibt sich, daá ein Projektbezogenes Scriptfile
+    ein eventuell vorhandenes 'globales' Scriptfile verdr„ngt.
+    Beim Starten des Simulators wird immer automatisch das Scriptfile
+    mit dem Namen 'Autoexec.SCR' ausgefhrt. Allerdings nur, wenn dieses
+    vorhanden ist.
+
+    Es gibt zwei 'Befehle' die im Zusammenhang mit Scriptfiles von
+    besonderer Bedeutung sind. Zum einen k”nnen beliebige Zeilen, die
+    mit einem '>' beginnen als 'Befehl' abgeschickt werden, ohne daá eine
+    Fehlermeldung generiert wird. Solche Zeilen werden nicht ausgefhrt,
+    haben also nur Kommentarcharakter. Mit Hilfe solcher Zeilen kann man
+    w„hrend eines Scriptfiles Informationen und Hinweise an den Benutzer
+    bermitteln.
+    Der zweite Sonderbefehl 'Pause' kann dazu benutzt werden, Scriptfiles
+    an bestimmten Stellen anzuhalten und auf einen Tastendruck warten zu
+    lassen.
+
+
+
+
+12.Syntax von Ausdrcken im Simulator/Monitor
+********************************************
+
+
+    Zahlen    <digits><suffix> = <zahl>
+    ------	 \ 	  \
+		  \ 	   \_ Suffix  b/B  o/O	d/D/-  h/H
+		   \ 	      ----------------------------
+		    \ 	      Basis    2    8	 10    16
+		     \
+		      \_ digits = 0-9,a-f,A-F
+
+
+    Zeichen	  '<char>'  (z.B. 'a')
+    -------
+
+    Operatoren	Operator   Typ		  Beschreibung
+    ----------
+		:	   Spezial	  Programcodebits Relativ
+		@	   Spezial	  Segment-Operator
+		*	   Operator	  Multiplizieren
+		/	   Operator	  Dividieren
+		%	   Operator	  Modulo (Rest nach Division)
+		-	   Operator	  Subtrahieren
+		+	   Operator	  Addieren
+		<<	   Binary	  links schieben
+		>>	   Binary	  rechts schieben
+		&	   Binary	  Bitweise 'UND'
+		^	   Binary	  Bitweise 'EXOR'
+		|	   Binary	  Bitweise 'ODER'
+		+^	   Spezial	  šbertr„ge bestimmen
+		+|	   Spezial	  Parity-Bit bestimmen
+		+-	   Spezial	  PC und Cyclen Update
+		<	   Relational	  Kleiner als
+		<=	   Relational	  Kleiner oder gleich
+		>	   Relational	  Gr”áer als
+		>=	   Relational	  Gr”áer oder gleich
+		==	   Relational	  Gleich
+		!=	   Relational	  Nicht gleich
+		=	   Zuweisung	  Variable <- Wert
+		*=	   Zuweisung	  Variable <- Variablenwert * Wert
+		/=	   Zuweisung	  Variable <- Variablenwert / Wert
+		%=	   Zuweisung	  Variable <- Variablenwert - Wert
+		-=	   Zuweisung	  Variable <- Variablenwert - Wert
+		+=	   Zuweisung	  Variable <- Variablenwert + Wert
+		^=	   Zuweisung	  Variable <- Variablenwert >> Wert
+		|=	   Zuweisung	  Variable <- Variablenwert >> Wert
+		&=	   Zuweisung	  Variable <- Variablenwert >> Wert
+		<<=	   Zuweisung	  Variable <- Variablenwert >> Wert
+		>>=	   Zuweisung	  Variable <- Variablenwert >> Wert
+		ú	   Null 	  Trennungszeichen
+
+    Priorit„t in einem Ausdruck ohne Klammern entsprechend der Reihenfolge !
+    ( ':' hat h”chste Priorit„t / 'ú' hat niedrigste Priorit„t )
+
+    Ausdruck	<expr> = mathematisch sinnvoller Ausdruck betehend aus
+    --------		 Zahlen, Operatoren, Labels, Speichersegment-
+			 zugriffen, Funktionen und runden Klammern.
+    - Alle Ausdrcke werden mit 32 Bit Integer Werten berechnet.
+    - Vergleichende Operatoren liefern 0 fr falsch und FFFFFFFFh fr wahr.
+
+	Beispiele: 10h+10>>10b	    ergibt 6
+		   (10h+10b)>>1	    ergibt 9
+		   ((w1=1)&2)	    ergibt 2 wenn w1=1 sonst 0
+
+
+
+
+
+
+13. Simulatortabelle erstellen
+******************************
+  Das Erstellen einer Simulatortabelle gliedert sich in mehrere
+  Teilschritte: 1.Speicherbereiche und Register des zu simulierenden
+		  Prozessors (oder Platine !) anlegen.
+		2.Segmentarten des Assemblers abbilden.
+		3.Anweisungen zur Initialisierung des Prozessors erzeugen
+		4.Eigentlichen Befehlssatz des Prozessors (m”glichst
+		  strukturiert) durch Formeln nachbilden.
+		5.Cyclische Anweisungen anlegen (wenn n”tig)
+		6.Inhalt des 'Register'-Fensters im Simulator festlegen
+		7.Interface zu anderen Modulen Vorbereiten
+		8.Einfachen Zugriff auf CPU-interne Register vorbereiten
+
+  Die Vorgehensweise soll hier anhand des Prozessors 80C552 von Philips
+  nachvollzogen werden. Zum besseren Verst„ndnis sollte man die
+  Entsprechende Tabelle ('Tabellen\80C552.TAS') mit heranziehen.
+
+
+  1.Speichersegmente anlegen
+  ==========================
+  Der 80C552 kann zun„chst einmal 64k Programmspeicher adressieren.
+  Um diesen Programmspeicher im Simulator bereitszustellen gengt eine
+  Zeile mit folgenden Inhalt:
+
+	       mB0 10000h	; Code-Speicher
+		\\\\____/
+		 \\\   \
+		  \\\	Anzahl der Elemente dieses Speichersegments
+		   \\Segmentnummer
+		    \Elementart (B=Byte, W=Wort, D=Doublewort)
+		     'm'= Kennung fr Speichersegmentdefinition (Memory)
+
+  Zu beachten ist folgendes:
+       - Alles was in einer Zeile nach einem Strichpunkt (';') steht
+	 ist Kommentar und fr die Interpretation irrelevant.
+       - Die Segmentnummer 0 ist fest reserviert fr den Programmspeicher.
+	 In dieses Segment wird beim Starten des Simulator automatisch
+	 das auszufhrende Programm geladen. Deshalb muá dieses Segment
+	 mindestens so groá sein, daá das auszufhrende Programm
+	 hinein passt, wenn es nicht ohnehin so groá gemacht wird,
+	 was der Prozessor maximal adressieren kann.
+       - Die Elementart des Codesegments ist auch bei den meisten 16-Bit
+	 Prozessoren 'Byte', da auch diese den Programmspeicher Byteweise
+	 adressieren (k”nnen).
+
+  Auf den mit dieser Zeile 'erzeugten' Speicher kann nun innerhalb des
+  Simulators mit dem Ausdruck 0@Adresse zugegriffen werden.
+  Allgemein kann auf eine beliebige Stelle in einem Segment mit
+       SegmentNummer@Adresse  zugegriffen werden.
+
+  Im weiteren besitzt der 80C552 noch 256 Byte internes Daten-RAM und
+  bis zu 64k externes RAM. Bereitzustellen mit den beiden Zeilen:
+
+	       mB1 256		; Internes RAM
+	       mB3 10000h	; Externer RAM-Speicher
+
+  Um die SF-Register (Special-Funktion-Register) des 80C552 zu simulieren
+  kann man noch ein Segment mit 256 Bytes reserviert deren obere 128
+  Adressen direkt den Inhalt der SF-Register repr„sentieren sollen.
+
+	       mB2 256	      ; Obere H„lfte SF-Register
+
+  Die untere H„lfte dieses Segments, die im wirklichen Prozessor gar nicht
+  existiert, soll fr Simulatorinterne Vorg„nge Reserviert sein.
+
+  An drei Stellen greift der Simulator selbst„ndig auf besondere Adressen
+  eines Segmentes zu. Es handelt sich dabei um:
+						 - Programmz„hler
+						 - Differenz-Cyclenzahl
+						 - Flag-Register
+
+  Zwei dieser drei Register werden hier konkret im 16-Bit-Segment 4
+  realisiert.
+
+	       mW4 3	     ; 0 = Programm-Counter
+			     ; 1 = Timer 2
+			     ; 2 = Flag-Register
+
+  Diese Register sind alle 16-Bit breit. Fr den Timer 2 wurde hier ein
+  Register bereitgestellt, da er nur lesbar und nicht beschreibbar sein
+  soll und deshalb nicht direkt im SFR-Bereich realisiert werden kann.
+
+  Das dritte Register auf das der Simulator direkt Zugriff hat ist die
+  Differenzcyclenzahl. Da der Wert dieses Registers bei einem Befehl niemals
+  gr”áer als 255 werden kann reicht hierfr ein 8-Bit Register aus.
+  Ich habe es deshalb auf Adresse 2 in den unteren nicht benutzten Teil
+  der SF-Register-Segmentes gelegt.
+
+  Damit der Simulator auf diese Register direkt zugreifen kann mssen
+  sie ihm bekannt gemacht werden. Dies geschieht ber folgende drei
+  Zeilen:
+	       P4 0    ; Programmz„hler -> Simulator
+	       C2 2    ; Differenz-Cyclenzahl -> Simulator
+	       F4 2    ; Flag-Position -> Simulator
+
+  'P', 'C' und 'F' (Groáschreibung beachten !) sind die entsprechenden
+  Schlsselbuchstaben auf die dann jeweil die entsprechende Segmentnummer
+  und die Adresse in diesem Segment folgen.
+  Diese drei Zeilen mssen in jeder Tabelle vorhanden sein.
+
+  In der Tabelle wird noch ein weiteres Segment erzeugt.
+
+	       mW5 8	  ; ADU-Kan„le
+
+  Dieses Segment wird ben”tigt um eine realistische Funktionsweise des
+  AD-Umsetzers zu erreichen (weiteres an entsprechender Stelle).
+
+
+  2.Abbilden der Segmentarten des Assemblers
+  ==========================================
+  Die Segmentarten die der Assembler verwendet, werden in der entsprechenden
+  Assemblertabelle festgelegt. Beim 80C552 sind es folgende Zeilen die
+  diese Segmentarten festlegen:
+      (Auschnitt aus der Datei 'Tabellen\MCS-51.TAB' die in die Datei
+       'Tabellen\80C552.TAB' importiert wird)
+
+   Zeile
+
+     1	  ; Segmentdefinitionen
+     2	  ; -------------------
+     3	  s CODE 0 10000h 0
+     4	  s C 0 10000h 0
+     5	  s XDATA 0 10000h 1
+     6	  s X 0 10000h 1
+     7	  s EXTERN 0 10000h 1
+     8	  s DATA 0 100h 2
+     9	  s D 0 100h 2
+    10	  s STACK 0 100h 2
+    11	  s S 0 100h 2
+    12	  s INTERN 0 100h 2
+    13	  s I 0 100h 2
+    14	  s BIT 0 80h 3 -> Intern 20h+@1/8 ((@2-1)/8)+1
+    15	  s B 0 80h 3 -> Intern 20h+@1/8 ((@2-1)/8)+1
+    16	  s BANKS 0 4 4 -> Intern @1*8 @2*8
+    17	  s SFREG 80h 100h 5 -> Overlay
+    18	  s SFBIT 80h 100h 6 -> Overlay
+
+  Das 4.Argument in jeder Zeile nach dem 's' bezeichnet die Clustergruppe.
+  In der Regel gibt es mehrere Zeilen mit einer Clustergruppe, was bei der
+  Programmierung bedeutet, daá mehrere Namen fr die selbe Segmentart zur
+  Verfgung stehen. Fr den Simulator muá jeweils der erste Eintrag fr
+  eine Clustergruppe als Abbildungsfunktion realisiert werden.
+  Damit mssen realisiert werden:
+				   CODE     (realisiert Clustergruppe 0)
+				   XDATA    (realisiert Clustergruppe 1)
+				   DATA     (realisiert Clustergruppe 2)
+				   BIT	    (realisiert Clustergruppe 3)
+				   BANKS    (realisiert Clustergruppe 4)
+				   SFREG    (realisiert Clustergruppe 5)
+				   SFBIT    (realisiert Clustergruppe 6)
+
+  Fr die Segmentart CODE ergibt sich zwingend die Funktion:
+
+	 fCODE 0@in
+
+  Zwingend deshalb weil das Segment 0 immer fr den Codespeicher reserviert
+  ist, wie im 1. Abschnitt bei der Segmentdefinition bereits erw„hnt.
+
+  Als Parameter bekommen alle derartigen Funktionen die Adresse im
+  jeweiligen Segment und mssen dann den richtigen Inhalt zurckliefern.
+
+  Analog fr alle weiteren Segmentarten beim 80c552:
+
+	 fDATA 1@in
+	 fSFREG 2@in
+	 fXDATA 3@in
+	 fBIT (1@(20h+((in>>3)&15))>>(in&7))&1
+	 fBANKS in
+	 fSFBIT ((2@(in&0F8h))>>(in&7))&1
+
+  Die unfangreichsten Funktionen mssen fr Bitadressen des Prozessors
+  erzeugt werden, da aus der Bitadresse zun„chst die Speicheradresse
+  extrahiert werden muá und dann die ensprechende Bit-Position herausmaskiert
+  und an die niederwertigste Position geschoben werden muá.
+
+  Zus„tzlich zu den Segmentarten sollte bei jedem Prozessor noch eine
+  Funktion fr 'Equ'-Ausdrcke realisiert werden damit auch diese
+  im Variablenfenster angezeigt werden k”nnen.
+
+	 fEqu in
+
+
+
+
+
+  3.Anweisungen zur Initialisierung
+  =================================
+  Laut Datenblatt eines Prozessors mssen nach einem RESET einige
+  Register bestimmte Inhalte besitzen. Unter anderem wird auch der
+  Programmz„hler stets in eine definierte Ausgangslage versetzt.
+
+  Beim 80C552 bedeutet das, daá der Programmz„hler auf 0 gesetzt werden
+  muá. Dies wird im Simulator durch die Zeile
+
+	     i 4@0=0
+		       erreicht.
+
+  'i' ist der Schlsselbuchstabe fr Initialisierungsanweisungen die
+  immer nach einem Hardwarereset ausgefhrt werden mssen. In der Zeile
+  kann nach dem Schlsselbuchstaben ein beliebiger Ausdruck folgen.
+  Es k”nnen in einer Tabelle beliebig viele Initialisierungszeilen
+  angelegt werden.
+  Natrlich k”nnen hier auch Simulatorinterne Variablen initialisiert werden.
+
+
+  4.Befehlssatz des Prozessors
+  ============================
+  Um den Befehlssatz eines Prozessor effektiv in einen fr den Simulator
+  geeigneten 'Baum' umsetzen zu k”nnen, sollte man sich den Befehlssatz
+  zun„chst in Form einer Tabelle veranschaulichen.
+  Zweck dieser šbung ist es Strukturen im Befehlssatz zu erkennen die eine
+  pr„gnante Umsetzung in einen 'Baum' erm”glichen.
+  In Befehlss„tzen sind sehr h„ufig solche Strukturen enthalten, da sie
+  sich auch bei einer Hardware-Realisierung positiv auswirken, und deshalb
+  bei der Konzipierung des Prozessors teilweise bewuát 'eingebaut' wurden
+  bzw. sich automatisch ergaben.
+
+  Grunds„tzlich ist aber auch eine 'brut force' L”sung m”glich um
+  einen Simulator-Kern zu realisieren.
+
+  Was macht ein Prozessor ?
+     - Er schaut an der Stelle die ihm der Programmz„hler angibt nach
+	einem Befehl.
+     - analysiert den vorgefundenen Befehl
+     - erkennt daraus wie viele Bits (Bytes) zu diesem Befehl geh”ren
+	und wie viele Cyclen er fr diesen Befehl brauchen darf
+     - setzt den Programmz„hler auf den n„chsten auszufhrenden Befehl
+     - fhrt den Befehl aus
+
+  Um an der Stelle die der Programmz„hler angibt den Programmcode zu
+  untersuchen stellt der Simulator den ':'-Operator bereit. dieser Operator
+  erm”glicht es relativ zum Programmz„hler eine bestimmte Bitzahl heraus-
+  zuschneiden und diese dann beliebig in Ausdrcken zu verwenden.
+
+  Beispiel:		     Programmz„hler = 6
+			    /
+    Code-Adresse     4	5  6  7  8  9  A  B
+    Code-Speicher   12 34 56 78 9A BC DE F0
+
+	Ausdruck   -->	 Ergebnis
+	 0:4	   -->	    5
+	 4:4	   -->	    6
+	 0:8	   -->	    56
+	 0:16	   -->	    5678
+	 9:2	   -->	    3
+	12:3	   -->	    4
+	  \ \
+	   \ Anzahl der gewnschten Bits
+	    relative Startposition in Bits !
+
+  Analyse des Befehls bedeutet bei HSIM eine Art 'Case'-Anweisung die fr
+  jeden Fall einen ausfhrbaren Ast besitzt. Der Simulator  stellt nur
+  eine sehr einfache baum„hnliche Struktur zur Verfgung mit der diese
+  Ver„stelung in einzelne Zweige realisiert werden kann.
+  Startzeile einer solchen Struktur ist eine Zeile die am Anfang einen
+  '.' (Punkt) mehr besitzt als die Letzte Zeile die mit einem Punkt
+  beginnt. Das heiát die erste Zeile mit einem Punkt am Anfang ist eine
+  solche Startzeile.
+
+  Format einer Startzeile:
+
+	.4:1 2
+	 \_/  \
+	   \   Anzahl der m”glichen ste (kein Ausdruck - feste Zahl !)
+	    Ausdruck der als Ergebnis die Nummer des auszuw„hlenden
+	    Astes ergibt.
+
+  Beispiel:
+
+	.4:1 2
+	.2@0E0h+=1	; Wird ausgefhrt wenn 4.Bit = 0
+	.2@0E0h-=1	; Wird ausgefhrt wenn 4.Bit = 1
+
+     In diesem Beispiel wrde der Akku (befindet sich auf Adresse 0E0h
+     im Segment 2) um 1 erh”ht wenn das 4.Bit des Prozessor-Befehls
+     0 ist und um 1 erniedrigt wenn das 4.Bit 1 ist.
+
+  Derartige Baumstrukturen lassen sich (fast) beliebig schachteln !
+
+  Die einfachste (und zugleich speicherhungrigste, wartungsfeindlichste)
+  Art den Befehlssatz eines 8-Bit-Prozessors zu implementieren bei dem
+  der Befehl immer vollst„ndig im 1.Byte codiert ist w„re folgende:
+
+	.0:8 256
+	.Ausdruck_fr_Befehl_00
+	.Ausdruck_fr_Befehl_01
+	.Ausdruck_fr_Befehl_02
+	.   ..
+	.   ..
+	.Ausdruck_fr_Befehl_FF
+
+  Die Anzahl der zu kodierenden Befehle betr„gt genau 256.
+  In der von mir verwendete Struktur fr den 80C552 in der nur noch 146
+  Befehle codiert werden mssen sieht in etwa wie folgt aus:
+
+	.4:1 2			 ; Abtrennen der Registerbank-Befehle
+	..((0:4)<<3)+5:3 128	 ; Sonstige Befehle (128 verschiedene !)
+	..
+	      ..
+	..
+	.
+	..2@5=(2@0D0h&18h)|5:3ú0:4 16	; 16 verschiedene RB-Befehle
+	..
+	      ..
+	..
+
+  Da das 4.Bit des 1.Befehlsbytes bereits bei der Abtrennung der RB-Befehle
+  bercksichtigt wird, muá es bei der weiteren Aufspaltung der sonstigen
+  Befehle herausgeschnitten werden. Das erreicht man mit einem Ausdruck
+  der wie folgt aussieht:
+			   ((0:4)<<3)+5:3
+
+  Bei der Aufspaltung der 16 verschiedenen RB-Befehle besteht der
+  Ausdruck eigentlich aus zwei Teilausdrcken die durch ein 'ú' (Alt+250)
+  voneinander getrennt sind. Als Astnummer fr die Aufspaltung wird immer
+  der letzte Ausdruck verwendet. Der erste Teilausdruck liefert somit also
+  kein Ergebnis nach 'auáen', wird aber Berechnet, und setzt somit das
+  Byte unter der Adresse 5 im Segment 2 auf einen Wert der sich aus den
+  unteren 3 Bit des 1.Code-Bytes und aus 2 Bits des Programmstatuswortes
+  des 80C552 ergibt. Und - Oh Wunder das Ergebnis ergibt immer die absolute
+  Adresse im internen RAM auf die sich der im folgenden auszufhrende
+  Registerbank-Befehl bezieht.
+
+  Bis zu diesem Punkt handelte es sich (fast) ausschlieálich um die Analyse
+  des anstehenden Befehls. Nun steht aber an den entsprechenden Stellen
+  mehrere Dinge fest:  - um welchen Befehl es sich handelt.
+		       - um vieviel der Programmz„hler erh”ht werden muá
+		       - wieviele Cyclen der Befehl zur Ausfhrung ben”tigt
+		       - eigentliche Aktion des Befehls
+  Diese Tatsachen mssen nun fr den Simulator umgesetzt werden.
+
+  Erstes sehr einfaches Beispiel bei dem der Befehl nur aus einem Byte besteht
+  ----------------------------------------------------------------------------
+  Beispiel:  DEC A   --> Inhalt des Akku um 1 erniedrigen
+			 (1-Byte-Befehl, ben”tigt einen Prozessorcyclus !)
+
+       Umsetzung:   ..4@0+=1ú2@2+=1ú2@0E0h-=1úPAR(0)
+		      \____/ \____/ \_______/ \____/
+			   \ 	  \ 	    \ 	   \
+			    \ 	   \ 	     \      Aktualisieren des PSW
+			     \      \ 	      Eigentliche Aktion des Befehls
+			      \      Cyclenzahl um 1 erh”hen
+			       Programmz„hler um 1 erh”hen
+
+       Die Syntax der erlaubten Ausdrcke lehnt sich stark an die unter
+       'C' gebr„uchliche Syntax an. Der Teilausdruck '4@0+=1' ist „quivalent
+       mit dem Ausdruck '4@0=4@0+1'. Beide erh”hen den Programmz„hler um 1.
+       (Es gibt dennoch einen Unterschied der im Zusammenhang
+	mit der Interface-Realisierung wichtig wird)
+
+       Bis auf die Anweisung 'PAR(0)' handelt es sich um normale
+       Ausdrcke mit Zuweisungen. 'PAR(0)' ist ein Funktionsaufruf. Die
+       Funktion selbst ist mit
+
+	   fPAR 2@0D0h&=0FEhú2@0D0h|=(2@0E0h+|8) ; Parity-Flag aktualisieren
+
+       auch in der Tabelle definiert. Da Funktionsaufrufe in einem Ausdruck
+       an ihrem Argument erkannt werden muá auch bei dieser Funktion, die
+       eigentlich gar kein Argument erwartet ein Argument (hier '0')
+       angegeben werden.
+       In dieser Funktion wird ein besonderer Befehl zur Berechnung des
+       Parity-Bits verwendet, da eine explizite Formel relativ umst„ndlich
+       w„re.
+       W„hrend der Implementierung eines neuen Prozessors ist es sinnvoll
+       alle Befehle die noch nicht richtig umgesetzt sind zun„chst mit
+       '0' abzus„ttigen. In diesem Fall bleibt der Simulator bei einem noch
+       nicht implementierten Befehl einfach stehen (da sich der Programm-
+       Z„hler nicht mehr erh”ht	!) und gibt die Meldung 'Nicht implemetierter
+       OP-Code ..' aus. Fr Befehle die der Prozessor gar nicht kennt
+       (freie OP-Codes) sollte aus der '0' eine '2' gemacht werden, um
+       die Meldung 'Ungltiger OP-Code' zu erzeugen. Eine '1' macht sich
+       beim Programmlauf berhaupt nicht bemerkbar und kann dann verwendet
+       werden wenn der Befehl bereits w„hrend der Dekodierung vollst„ndig
+       ausgefhrt wurde.
+			    0 -> Nicht implemetiert
+			    1 -> o.k. (keine Meldung)
+			    2 -> Ungltiger OP-Code
+
+       Wenn im Laufe der Dekodierung zu einer Zeile mit einer 1 der
+       Programmz„hler nicht ver„ndert wird, bleibt der Simulator natrlich
+       auch stehen, allerdings ohne Meldung !
+
+
+  Nun ein Beispiel bei dem der Befehl aus 2 Bytes besteht
+  -------------------------------------------------------
+  Beispiel:  ANL A,<Adr> --> Inhalt des Akku UND-verknpfen mit dem Inhalt
+			     der Adresse <Adr> im internen RAM (oder SFR !)
+			     (2-Byte-Befehl, ben”tigt 1 Prozessorcyclus !)
+
+       Umsetzung:   ..4@0+=2ú2@2+=1ú2@0E0h&=(1+8:1)@(8:8)úPAR(0)
+		      \____/ \____/ \___________________/ \____/
+			   \ 	  \ 	    \ 		    \
+			    \ 	   \ 	     \  	Aktualisieren des PSW
+			     \      \ 	      Eigentliche Aktion des Befehls
+			      \      Cyclenzahl um 1 erh”hen
+			       Programmz„hler um 2 erh”hen
+
+       Abh„ngig vom h”chtwertigen Bit der Adresse wird hier entweder
+       auf das interne RAM (Adr < 128) oder auf die SFR zugegriffen.
+
+  Als weiteres Beispiel einen relativen bedingten Sprungbefehl
+  ------------------------------------------------------------
+  Beispiel:  JZ <Rel-Adr> --> Relativer Sprung wenn der Akku 0 enth„lt
+			      (2-Byte-Befehl, ben”tigt 2 Prozessorcyclen !)
+
+       Umsetzung:   ..4@0+=2ú2@2+=2ú4@0+=(2@0E0h==0)&(8:8-(256&(8:1==1)))
+		      \____/ \____/ \___________________________________/
+			   \ 	  \ 	     \
+			    \ 	   \ 	      Sprung oder nicht Sprung !?
+			     \      Cyclenzahl um 2 erh”hen
+			      Programmz„hler um 2 erh”hen
+
+       (2@0E0h==0) liefert als Ergebnis -1 wenn der Akku (2@0E0h) 0 ist
+       und 0 wenn der Akku nicht 0 ist. Wenn man dieses Ergebnis
+       UND-Verknpft mit dem Sprungoffset und das Ergebnis auf den
+       Programmz„hler addiert, so ergibt sich genau dann ein Sprung wenn
+       der Vergleich positiv ausf„llt.
+       Anmerkung: Solche Sprnge k”nnen auch ber einen Unterbaum mit zwei
+		  sten realisiert werden. Dies ist besonders dann
+		  vorzuziehen wenn abh„ngig von der Bedingung noch andere
+		  Aktionen gemacht werden mssen.
+
+  Abschlieáendes Beispiel - Unterprogrammaufruf mit zugeh”rigem Return
+  --------------------------------------------------------------------
+  Beispiel:  LCALL <Adr> --> Unterprogrammaufruf
+			     (3-Byte-Befehl, ben”tigt 3 Prozessorcyclen !)
+
+       Umsetzung: ..4@2|=1ú4@0+=3ú2@2+=3úPUSH(4@0&255)úPUSH(4@0>>8)ú4@0=8:16
+		    \____/ \___________/ \_________________________________/
+		      \	   Programmz„hler   Rcksprungadresse -> Stack
+		       \    & Cyclenzahl    Call ausfhren
+			\
+			 Meldung eines Calls an den Simulator
+			 ber das Flagregister !
+
+       benutzte Funktion:  fPUSH 2@81h+=1ú1@(2@81h)=in
+				 \______/ \__________/
+				    \ 	     \
+				     \	      Argument der PUSH-Funktion an
+				      \	      die Stelle schreiben auf die
+				       \      der Stackzeiger zeigt.
+					\
+					 Stackzeiger um 1 erh”hen
+
+       Besonderheit dieses Befehls ist die Meldung eines CALL's
+       an den Simulator ber das Flagregister. šber diesen Mechanismus
+       kann der Simulator Unterprogramme erkennen und diese gegebenenfalls
+       in einem Schritt ausfhren (-> Funktionstasten F10/F8).
+
+       Im Flagregister sind insgesamt zwei Bitpositionen fr Meldungen
+       an den Simulator vergeben:
+
+	    Bitposition    Art der Meldung an den Simulator
+
+		0	   Unterprogrammaufruf
+		1	   Return aus einem Unterprogramm
+
+       Wenn das entsprechende Bit gesetzt ist, so erkennt der Simulator
+       die entsprechende Meldung.
+
+       Realisierung des Return-Befehls:
+
+	     ..4@2|=2ú2@2+=2ú4@0=(1@(2@81h)<<8)+1@(2@81h-1)ú2@81h-=2
+	       \____/ \____/ \____________________________/ \______/
+		 \	\ 	eigentlicher Rcksprung	     Stackzeiger
+		  \	 \				     Aktualiseren
+		   \ 	  Return ben”tigt 2 Cyclen
+		    \
+		     RETURN-Meldung an den Simulator
+
+
+  Sonderausdruck 'n' in einer Zeile der Tabelle als Befehlsumsetzung
+  ------------------------------------------------------------------
+  Wenn in einer Tabelle an Stelle der eigentlichen Umsetzung des Befehls
+  (nach den Punkten !) einfach ein 'n' steht, dann bedeutet das, daá fr
+  diese Zeile der Ausdruck (Befehlsumsetzung der n„chsten Zeile verwendet
+  wird. Damit k”nnen bestimmte Bereiche eines Baumes nachdem sie zun„chst
+  in einzelne ste aufgespalten worden sind wieder vereinigt werden zu
+  einer einzigen Umsetzung. Wenn mehrere 'n'-Zeilen hintereinander
+  stehen, so wird fr alle Zeilen die erste Befehlsumsetzung nach den
+  'n'-Zeilen verwendet. (Anm. d. Autors: Macht zun„chst einen komischen
+  Eindruck, spart aber unter Umst„nden sehr viel Speicher !)
+
+
+  ACHTUNG !!!
+  ===========
+  In der Tabelle z.B. fr den 80C552 steht vor dem Befehlssatz des
+  Prozessors eine Zeile die nur ein 'O' enth„lt. Diese Zeile schaltet die
+  Definition der Prozessorbefehle und der Befehlscyclischen Anweisungen
+  (nicht der Cyclencyclischen Anweisungen !) in der Tabelle ab !!!
+  Anstelle der Tabelle wird eine in HSIM integrierte C-Routine verwendet
+  die die Befehle des Prozessors nachbildet.
+  Das hat zun„chst den Nachteil daá jetzt nichts mehr ver„ndert werden
+  kann, bringt aber einen deutlichen Geschwindigkeitsvorteil (Faktor 5-10).
+  In der Tabelle ist trotzdem die komplette Nachbildung enthalten, damit
+  durch auskommentieren des O's auch eine modifizierte Tabelle verwendet
+  werden kann (mit reduzierter Geschwindigkeit !).
+  Wenn in einer Tabelle ein 'O' enthalten ist, fr die HSIM beine
+  C-Routine zur verfgung hat, so verwendet HSIM einfach die Tabelle.
+  Im Simulator kann mit dem Befehl 'Status' festgestellt werden
+  ob momentan die Tabelle oder eine C-Routinen verwendet wird. Wenn nach
+  der Bezeichnung 'Overlay' eine NULL steht, so ist keine C-Routine
+  vorhanden - jede andere von 0 verschiedene Zahl deutet auf das
+  vorhandensein einer entsprechenden C-Routine hin.
+
+  Anmerkung: Wenn Sie eine Tabelle geschrieben haben und sie um die
+	     Simulation zu beschleunigen in Form einer C-Routine integriert
+	     haben m”chten, schicken Sie mir die Tabelle auf einer Diskette
+	     (Rckporto nicht vergessen !) und ich werde Ihnen innerhalb
+	     weniger Tage HSIM mit Ihrer Tabelle zukommen lassen.
+	     Als Gegenleistung darf ich Ihre Tabelle mit HSIM weiter-
+	     verbreiten.
+
+
+
+
+  5.Cyclische Anweisungen anlegen
+  ===============================
+  Bei Cyclischen Anweisungen handelt es sich um Ausdrcke die Periodisch
+  das heiát ohne Rcksicht auf den gerade auszufhrenden Befehl immer wieder
+  ausgefhrt werden.
+  Ein einfaches Beispiel w„re ein Echtzeittimer. Ein solcher Timer máte
+  nach jedem Prozessorcyclus um einen bestimmten Wert erh”ht werden.
+  Um einen 16-Bit Timer zu realisieren gengt folgende Zeile:
+
+		b1 4@1+=2@2
+		 \\\______/
+		  \\	\
+		   \\	 Eigentliche Aktion: Timer um Cyclenzahl erh”hen
+		    \\__
+		     \ 	Bedingungsausdruck der angibt wann die folgenden
+		      \	ausgefhrt werden mssen (hier 1 = immer erfllt !)
+		       \
+			Schlsselbuchstabe fr Befehls-Cyclische Anweisung
+
+  Der so realisierte Timer ist nicht abschaltbar und z„hlt immer genau die
+  Cyclen des Prozessors, indem er auf den Wert von 4@1 immer die Anzahl
+  der Cyclen des letzten ausgefhrten Befehls (2@2) addiert.
+
+  Konkretes Beispiel beim 80C552 w„re der Timer 2.
+
+     ; Timer 2 als normaler Z„hler mit Prescaler
+  b2@0EAh&3==1 2@3+=2@2ú4@1+=(2@3>>((2@0EAh>>2)&3))ú2@3&=((1<<((2@0EAh>>2)&3))-1)ú2@0ECh=4@1ú2@0EDh=4@1>>8
+
+  Neben diesen Anweisungen die fr jeden Befehl des Prozessors ausgefhrt
+  werden gibt es noch Cyclencyclische Anweisungen. Die Syntax dieser
+  Anweisungen entspricht der der Befehlscyclischen Anweisungen, nur daá der
+  Schlsselbuchstabe ein `c` ist.
+
+  Prinzipiell k”nnen alle cyclencyclischen Anweisungen auch als
+  befehlscyclische Anweisungen realisiert werden, da die Anzahl der
+  abgelaufenen Cyclen im Differenzcyclen-Register steht.
+
+
+
+
+  6.Inhalt des Register-Fensters
+  ==============================
+  Das Registerfensters sollte auf einen Blick die wichtigsten Register
+  des Prozessors veranschaulichen.
+  In der Regel geh”rt dazu eine Art Akku, der Prozessorstatus und natrlich
+  der Programmz„hler.
+  Um den Akku des 80C552 darzustellen gengt folgende Zeile:
+
+	     v1 0 Akku=%02lX 2@0E0h		 ; Akku anzeigen
+	       \ \\________/ \____/
+		\ \	   \	  \
+		 \ \ 	    \ 	   Ausdruck fr darzustellenden Wert
+		  \ \ 	     Darstellungsformat(keine Leerzeichen !)
+		   \ Spalte
+		    Zeile
+
+  'v' (kleines 'v') ist der Schlsselbuchstabe fr Darstellungen im
+  Register-Fenster. Zeile und Spalte bezeichnen den Anfangsort ab dem
+  der gewnschte Ausdruck dargestellt werden soll.
+  Die mit Darstellungsformat bezeichnete Zeichenkette muá einem Format
+  entsprechen wie es auch unter der Programmiersprache 'C' verwendet
+  wird. Einzige Ausnahme ist, daá keine Leerzeichen enthalten sein drfen.
+  Das Darstellungsformat muá im weiteren so angelegt werden, daá es genau
+  eine 'long int'-Zahl als Argument erwartet.
+  Beispiele fr gltige Formate: (Argument = 138)
+		 'Akku=%li'	-->   Akku=138
+		 'PSW=%lx'	-->   PSW=8a
+		 'PC:%4lX'	-->   PC:  8A
+		 'PC:%04lX'	-->   PC:008A
+
+  Der Ausdruck fr den darzustellenden Wert kann natrlich auch komplexer
+  sein. Um Bespielsweise das Register R0 des 80C552 richtig anzuzeigen
+  muá folgende Zeile angelegt werden:
+
+		 v2 15 %02lX 1@(2@0D0h&18h)	  ; R0 anzeigen
+
+  Mit dieser Zeile ist der Tatsache Rechnung getragen, daá sich das Register
+  R0 in Abh„ngigkeit vom Inhalt des PSW (Programmstatuswort) an verschiedenen
+  Stellen im internen RAM befinden kann. Mit anderen Worten wenn der
+  Programmierer die Registerbank wechselt, wird automatisch das aktuelle
+  Register R0 angezeigt !
+
+  Innerhalb des Registerfensters k”nnen auch Buchstaben dargestellt werden,
+  die von bestimmten Werten abh„ngen. Diese M”glichkeit wird in der
+  Simulatortabelle fr den 80C552 nicht benutzt. Als Beispiel fr diese
+  M”glichkeit sei an dieser Stelle auf die Bausteintabelle fr den 8255
+  zurckgegriffen. Dort gibt es eine Zeile nach folgendem Muster:
+
+	      v0 3 ÚÄÄÄ%cÄÄ¿ 'O'^((1@3&10h==10h)&('I'^'O'))
+
+  Mit dieser Zeile wird eine Art von Klammer (ÚÄÄÄÄÄÄ¿) erzeugt, die zur
+  n„heren Charakterisierung in der Mitte einen Buchstaben besitzt. Dieser
+  Buchstabe kann entweder ein 'I' fr Input oder ein 'O' fr Output sein.
+  An der Stelle an der der Buchstabe im Formatstring erscheinen soll muá
+  mit '%c' definiert werden. Beim Ausdruck fr den anzuzeigenden Wert muá
+  als Ergebnis der Hexcode fr das gewnschte Zeichen herauskommen. Im
+  Beispiel wird, wenn das 4. Bit der Speicherstelle 3 im Memorysegment 1
+  gesetzt ist, anstelle des 'O' ein 'I' angezeigt.
+
+
+
+  7.Interface zu anderen Modulen Vorbereiten
+  ==========================================
+  Das Interface zu anderen Modulen (Prozessoren) erfolgt bei HSIM
+  ber bestimmte Speicheradressen, was normalerweise als Memorymapped
+  bezeichnet wird. Das bedeutet, daá Ausgaben an andere Module so
+  erfolgen, daá auf bestimmte Speicheradressen normal geschrieben wird.
+  Der eigentliche Modulbergreifende Zugriff erfolgt dabei nur bei
+  Schreibzugriffen auf spezielle Portadressen, die als solche dem
+  Simulator mitgeteilt werden mssen.
+  Um dem Simulator mitzuteilen, daá eine Speicherstelle als Ausgabeport
+  verwendet werden soll, mssen diese Speicherstellen als solche
+  mittels 'I'-Zeilen (Interface-Zeilen) in der Tabelle angemeldet werden.
+
+  Mit der Zeile (Beispiel)
+
+	 Ipo 2@144 P1.0,P1.1,P1.2,P1.3,P1.4,P1.5,P1.6,P1.7
+	 |\/ \___/ \_____________________________________/
+	 | \ 	 \   Pinbezeichnungen durch Komma getrennt
+	 |  \ 	  Adresse fr die die Pinbezeichnungen gelten sollen
+	 |   Kennung: <p>inbezeichnung <o>utput
+	 Kennung fr <I>nterface-Zeile
+
+  wird die Adresse 144 des Memorysegmentes 2 als Ausgabeport definiert.
+  (Zur Erinnerung: Beim 80C552 Prozessor kann unter dieser Adresse das
+  Ausgabeport P1 angesprochen werden)
+  Nachfolgend k”nnen entsprechend der Bitzahl des Ports oder eigentlich
+  der Bitzahl des verwendeten Segments Bezeichnungen der Einzelbits durch
+  Kommas voneinander getrennt angegeben werden.
+  Diese Bezeichnungen werden bei der Definition von Verbindungen im
+  Simulator als Auswahlm”glichkeit angeboten (->Connetion-Editor).
+  Diese M”glichkeit der Definition von Output-Pins ist bei Ports direkt
+  am Prozessor sehr sinnvoll und einfach. Bei praktisch allen Prozessoren
+  (mit externem Adress- und Datenbus) ist es aber m”glich an beliebigen
+  Stellen im Adressraum Output-Ports (Latches) anzulegen. Damit man auch
+  ber solche User-Ports andere Module ansteuern kann gibt es eine
+  weitere Form Output-Pins fr den Simulator anzumelden.
+
+  Mit der Zeile
+
+	 Ipo 3@-1 ?XData
+	 |\/ \__/ |\___/
+	 | |   |  |  Dummybezeichnung fr Memorymapped I/O-Pins
+	 | |   |   \
+	 | |   |    Kennung daá Ort und Anzahl der Output-Pins vom
+	 | |   |     Anwender zur Laufzeit angegeben werden k”nnen
+	 | |	\
+	 | |	 Adresse fr die die Pinbezeichnungen gelten sollen
+	 | |	  Das Segment (hier 3) muá immer angegeben werden
+	 | |	  Wenn die Adresse -1 ist, so kann sie vom Anwender
+	 | |	  zur Laufzeit angegeben werden.
+	 |  \
+	 |   Kennung: <p>inbezeichnung <o>utput
+	 Kennung fr <I>nterface-Zeile
+
+  kann der gesamte Adressraum des Segmentes 3 (hier Externes Datensegment)
+  als memorymapped I/O fr Output verwendet werden.
+
+
+  Als Gegenstck zu den Output-Pins muá fr Eingangspins die Zeile
+
+	 Ipi 2@21 P1.0,P1.1,P1.2,P1.3,P1.4,P1.5,P1.6,P1.7
+	 |\/ \__/ \_____________________________________/
+	 | \ 	\   Pinbezeichnungen durch Komma getrennt
+	 |  \ 	 Adresse fr die die Pinbezeichnungen gelten sollen
+	 |   Kennung: <p>inbezeichnung <i>nput
+	 Kennung fr <I>nterface-Zeile
+
+  angegeben werden. Die Bezeichnungen sind in diesem Beispiel die selben,
+  weil der Port 1 beim 80C552 als Input- und Output-Port verwendet
+  werden kann. Bei vielen Prozessoren k”nnte sogar die zugeh”rige Adresse
+  gleich der Ouputadresse sein, wenn wirklich nur ein physikalisches
+  Register im Prozessor vorhanden ist. Nicht so beim 80C552, bei ihm
+  muá streng zwischen dem Wert im Outputregister und dem gelesenen
+  Wert beim Input unterschieden werden, da er sogenannte Opencollektor
+  Ausg„nge besitzt.
+  Aus diesem Grund muá fr die Eingabe eine beliebige aber andere
+  Simulatorinterne Adresse vergeben werden (im Beispiel Segment 2,
+  Adresse 21). Der Inhalt dieser Speicherstelle soll den Wert der von
+  auáen an den Port angelegten Pegel enthalten.
+  Nun muá aber, wenn der Prozessor den Port lesen will noch eine
+  Sonderbehandlung erfolgen. Port lesen heiát Lesezugriff auf die
+  Adresse 2@144. Bei einem solchen Lesezugriff muá als Wert die UND-
+  Verknpfung von Port-Output-Wert und dem Eingabewert zurckgeliefert
+  werden (Opencollektor = UND-Verknpfung !).
+  Erreicht wird dies mit der Zeile
+
+	 Ifi 2@144 2@21&in
+	 |\/ \___/ \_____/
+	 | \ 	 \ 	 Leseformel
+	 |  \ 	  Adresse bei der die Leseformel wirksam sein soll
+	 |   Kennung: <f>ormel <i>nput
+	 Kennung fr <I>nterface-Zeile
+
+  Diese Zeile weiát der Adresse 2@144 eine Formel zu, deren Ergebnis
+  als Lesewert Verwendung findet.
+  Damit kann auf den tats„chlichen Inhalt einer Speicherstelle (hier:2@144)
+  im gleichen Modul eigentlich nicht mehr zugegriffen werden, da immer das
+  Ergebnis der Formel 'gelesen' wird.
+  Auf den Schreibzugriff hat diese Formel keinen Einfluá, dieser Zugriff
+  kann ganz normal erfolgen. Um nun aber einen gezielten Eingriff
+  beim Ausgabewert in Abh„ngigkeit vom Momentanzustand machen zu k”nnen
+  muá man sogenannte READ-MODIFY-WRITE-Befehle der Art 2@144^=1 (Anstelle
+  von 2@144=2@144^1) verwenden. Wenn man nur den Wert haben will, so muá
+  man eine Dummyoperation (z.B.: 2@144^=0) verwenden.
+  Beim Schreiben von einem anderen Modul auf den so definierten Port 1
+  wird die Verbindung vom Anwender mittels der Bezeichnungen P1.0,P1.1,...
+  hergestellt, daá der eigentliche Schreibvorgang dann auf die Adresse
+  21 des Segmentes 2 erfolgt und nicht auf Adresse 144 bemerkt man nicht.
+
+  Der Gesamtvorgang sieht nun fr eine angenommene Verbindung
+  von P1.0(Output) nach P1.1(Input) folgendermaáen aus:
+
+     Output-Pin 		 Input-Pin (meistens anderes Modul)
+	       beim Schreiben
+       P1.0  ----------------->  Bit 1 von 2@21
+   (Bit 0 von 2@144)			       \
+						\  normales Lesen
+						 &--(allg. Formel)--->
+						/
+					       /   READ-MODIFY-WRITE
+				 Bit 1 von 2@144 <------------------->
+						   oder Schreiben
+
+  Mit diesem Mechanismuá k”nnen normale Portpins, die nur durch Software
+  ausgewertet werden sehr effizient realisiert werden.
+  Bei Input-Pins, die zum Beispiel direkt einen Hardwarez„hler Takten
+  sollen ist diese Realisierung sehr Zeitaufwendig, da das Inputpin
+  st„ndig ber Cyclische Anweisungen abgefragt werden muá, ob es sich
+  ge„ndert hat und entsprechend der Z„hlerstand ver„ndert werden.
+  Viel eleganter w„re es, wenn gleich die Seite die das Inputpin
+  ver„ndert den Z„hler im Zielmodul bedienen wrde.
+  Zu diesem Zweck ist es m”glich einer Speicherstelle auch eine
+  Receive-Funktion zuzuordnen. Im Klartext bedeutet das, wenn von einem
+  Modul ber eine Verbindung (Connection) auf eine Speicherstelle in
+  einem anderen Modul zugegriffen wird, so wird, wenn dieser Speicherstelle
+  im (anderen Modul) eine Receive-Funktion zugeordnet ist, diese Ausgefhrt.
+  Realisiert wird eine Receive-Funktion mit der Zeile
+    (Beispiel aus Simulatortabelle fr PIC16C57)
+
+	 Ifr 2@12 2@13=(2@13<<1)+(2@12&1)ú2@14=2..... usw.
+	 |\/ \__/ \_______________________________...
+	 | \ 	\ 	 Receiveformel
+	 |  \ 	 Adresse bei der die Receiveformel wirksam sein soll
+	 |   Kennung: <f>ormel <r>eceive
+	 Kennung fr <I>nterface-Zeile
+
+  Das Abarbeiten einer Receive-Formel kann nur ber eine Verbindung
+  (Connection) ausgel”st werden. Bei jedem Zugriff wird die Formel
+  genau einmal abgearbeitet. Das eigentliche Ver„ndern der Speicherinhalte
+  im Zielmodul wird dabei bereits VOR dem Ausfhren einer eventuell
+  definierten Receivefunktion im Hintergrund durchgefhrt.
+
+
+
+
+  7.Einfachen Zugriff auf CPU-interne Register vorbereiten
+  ========================================================
+  Alle Variablen die im Rahmen des Assemblerprogramms vom jeweiligen
+  Programmierer definiert worden sind, k”nnen unter ihrem Namen sowohl
+  ins Watchfenster aufgenommen werden als auch im Commandfenster mit dem
+  SET-Befehl ver„ndert werden. Damit dies auch mit CPU-internen Registern
+  m”glich wird, k”nnen in der Simulatortabelle Zeilen des folgenden
+  Typs integriert werden:
+
+	     dAkku 6 CPU	 ; Variable 'Akku' anlegen
+	     \\__/ \ \_/
+	      \ \   \  \
+	       \ \   \  Segmentbez. in dem sich der Akku befindet
+		\ \   \  (durch genau 1 Leerzeichen abgetrennt !)
+		 \ \   \
+		  \ \ 	Adresse des Akku in diesem Segment
+		   \ \   (durch genau 1 Leerzeichen abgetrennt !)
+		    \ \
+		     \ Name unter dem die Speicherstelle angesprochen
+		      \ 			 werden soll
+		       \
+			Kennung: 'd'eclare Variable
+
+
+  Diese Zeile erzeugt im Lokalbereich 0 fr Variablen die versteckte
+  Variable 'Akku'. Der Wert der dieser Bezeichnung ('Akku') zugeordnet
+  ist befindet sich im Segment 'CPU' an der Adresse 6.
+  Mit der Schreibweise CPU(6) erh„lt man den selben Wert, man muá allerdings
+  wissen, daá sich der Akku unter der Adresse 6 verbirgt !
+  Beim erzeugen solcher Zugriffsvariablen ist es sinnvoll sie genau so
+  zu benennen, wie sie im Registerfenster bezeichnet sind, um Verwirrungen
+  m”glichst zu vermeiden !
+  Wenn das verwendete Segment nicht ohnehin schon vorhanden ist, muá es
+  mit der entsprechenden Zeile bei den Segmentabbildungen (siehe dort)
+  mit eine 'f'-Zeile eingefgt werden. In dieser 'f'-Zeile wird die
+  wirkliche Segmentnummer erst eingesetzt.
+  Wenn 'Akku' in diesem Sinn richtig angemeldet worden ist, dann muá der
+  Befehl
+	    SET Akku=Akku+1
+
+  im Command-Fenster den Akku um eins erh”hen. Entsprechend kann die
+  Bezeichnung 'Akku' jetzt in beliebigen Ausdrcken verwendet werden.
+
+
+
+
+
+
+14. Bausteintabelle erstellen
+*****************************
+  Was ist ein Baustein ? - Mit Baustein werden in diesem Zusammenhang alle
+  Integrierten digitalen Bauelemente (ICs) bezeichnet, die nicht mittels
+  Programm erst eine Funktion vom Programmierer bekommen mssen. Bausteine
+  haben damit eine 'fest verdrahtete' Funktion, die nicht ver„ndert werden
+  kann. Dies bedeutet nicht, daá diese Bausteine nicht innerhalb gewisser
+  fester Grenzen konfiguriert werden k”nnen !
+  Als Beispiel kann man hier den Baustein mit der Bezeichnung 8255 nennen.
+  Bei diesem Baustein handelt es sich um einen Portbaustein der an sehr
+  viele Mikroprozessoren angeschlossen werden kann. Dieser Baustein
+  enth„lt drei 8-Bit breite Ein-Ausgabeports, die in bestimmten Grenzen
+  konfiguriert werden k”nnen. Dieser Baustein ist in Form der Datei
+  '8255.TBA' im Unterverzeichnis Tabellen bereits in seinen wesentlichen
+  fr HSIM modelliert. Diese Tabelle kann fr die folgenden Ausfhrungen
+  als anschauliches Beispiel dienen.
+  Grunds„tzlich handelt es sich bei den Bausteintabellen (*.TBA) um
+  Simulatortabellen (*.TAS). Es k”nnen damit bis auf einige Ausnahmen alle
+  M”glichkeiten genutzt werden die auch fr Simulatortabellen zur Verfgung
+  stehen.
+  Als wichtigste nderung wird das Memorysegment 0 im Gegensatz zu
+  Simulatortabellen nicht automatisch mit dem Auszufhrenden Programm
+  geladen, da es dieses Programm nicht gibt (logisch). Grunds„tzlich kann
+  aber auch ein interner 'Prozessor' bei Bausteinen verwendet werden
+  (beim 8255 nicht n”tig). Das ist auch der Grund weshalb innerhalb von
+  Bausteintabellen ein Befehlsbaum, zumindest als Dummy, angelegt werden
+  muá. Dieser Dummy kann wie folgt aussehen.
+
+		 ; Simulatortabelle (Dummy)
+		 ; ----------------
+		 .0 1
+		 .1+-1
+
+  Entsprechen mssen auch der Programmz„hler, der Cyclenz„hler und das
+  Simulator-Flagregister angelegt und beim Simulator angemeldet werden.
+
+		 P1 0  ; Programmz„hler -> Simulator
+		 C1 1  ; Differenz-Cyclenzahl -> Simulator
+		 F1 2  ; Flag-Register -> Simulator
+
+  Das entsprechende Memorysegment, hier 1, muá natrlich auch angelegt
+  sein, so daá der Zugriff auf die angemeldeten Register m”glich ist.
+  Source- und Variablenfenster gibt es nicht, da wie bereits erw„hnt
+  fr Bausteine kein Program ben”tigt wird.
+  Damit wird das Registerfenster zum zentralen Fenster von Bausteinen.
+  Wichtige interne Vorg„nge, Einstellungen und I/O-Pins sollten im
+  Registerfenster durch entsprechene 'v'-Zeilen angezeigt werden.
+  Fr das konkrete Beispiel (8255) mssen zumindest das Konfigurations-
+  register des Bausteins und die Zust„nde der 24 Portbits angezeigt
+  werden. Dies kann wie folgt aussehen.
+
+		 ; Bestimmte Registerinhalte anzeigen
+		 ; ----------------------------------
+		 v0 1 M%1lX (1@3>>5)&3
+		 v0 3 ÚÄÄÄ%cÄÄ¿ 'O'^((1@3&10h==10h)&('I'^'O'))
+		 v1 1 A:%08lX Binary(1@4)
+		 v0 12 M%1lX (1@3>>2)&1
+		 v0 14 ÚÄÄÄ%cÄÄ¿ 'O'^((1@3&2==2)&('I'^'O'))
+		 v1 12 B:%08lX Binary(1@5)
+		 v2 3 ÚÄ%c¿ 'O'^((1@3&8==8)&('I'^'O'))
+		 v2 7 ÚÄ%c¿ 'O'^((1@3&1==1)&('I'^'O'))
+		 v3 1 C:%08lX Binary(1@6)
+		 v3 12 Ctrl=%02lX 1@3
+		 v4 1 Nur_Betriebsart_0_implementiert 0
+
+  Die Syntax entspricht exakt derjenigen die auch in Simulatortabellen
+  verwendet werden kann. Die Funktion 'Binary()' dient zur Vereinfachung
+  einer bin„ren Darstellung und ist auch in der Bausteintabelle definiert.
+  Sie stellt, wie der Name schon vermuten l„át einen Wert in bin„rer
+  Schreibweise dar, was insbesondere bei Portpins, bei denen es auf jedes
+  einzelne Bit ankommt, sinnvoll ist. Beim Verwenden der Bausteintabelle
+  ergibt sich ein Erscheinungsbild fr das Registerfenster nach folgendem
+  Vorbild:
+		şÍÍÍÍÍÍÍÍÍÍÍÍÍÍ2:RegisterÍÍÍÍÍÍÍÍÍÍÍÍÍÍ»
+		º M0ÚÄÄÄIÄÄ¿ M0ÚÄÄÄIÄÄ¿		       º
+		º A:00000000 B:00000000 	       º
+		º   ÚÄI¿ÚÄI¿			       º
+		º C:00000000 Ctrl=1B		       º
+		º Nur_Betriebsart_0_implementiert      º
+		º				       º
+		È2:8255ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ¼
+
+  Zentrales und wichtigstes Element bei der Nachbildung von Bausteinen
+  sind jedoch die Interfacefunktionen. Mit ihrer Hilfe werden sowohl die
+  Register zur Ansteuerung des Bausteins als auch eventuelle Input- und
+  Outputpins mit ihren Bezeichnungen nach 'auáen' bekannt gemacht. Fr
+  die interne Funktionsweise statischer Bausteine werden praktisch
+  ausschlieálich Receivefunktionen verwendet. Dabei kann eine Receive-
+  funktion weitere normale Funktionen aufrufen, oder durch den Zugriff
+  auf spezielle Speicherstellen Readfunktionen ausl”sen.
+  Als Anschauungsbeispiele k”nnen die Bausteintabellen '8255.TBA' und
+  'shift.TBA' (=Schieberegister mit Latch) herangezogen werden.
+
+
+
+
+
+15. Monitortabelle erstellen
+****************************
+
+  Voraussetzungen: - funktionstchtige Microcontrollerplatine mit der der
+		     PC ber eine serielle Leitung Verbindung aufnehmen kann.
+		   - Monitorprogramm auf der Controllerseite (wird manchmal
+		     auch als Talker bezeichnet) welches das
+		     lesen und setzen beliebiger Register und Speicherstellen
+		     erlaubt und zus„tzlich gesteuerten Single-Step-Betrieb
+		     des Controllers erm”glicht.
+
+  Grunds„tzlich ist das Erstellen einer Monitortabelle nicht an ein
+  besonderes Monitorprogramm im Controller gebunden. Man erh„lt aber ein
+  erheblich leistungsf„higeres Debuggingwerkzeug wenn sich der Monitor
+  im Controller mit sehr kurzen Befehlen ansprechen l„át und seinerseits
+  mit kurzen pr„gnanten Ergebnissen antwortet, denn die serielle
+  Schnittstelle ist relativ langsam und bestimmt mit ihrer
+  bertragungsleistung die Leistung des gesamten Debuggers.
+
+  Das Erstellen einer Monitortabelle selbst kann in mehrere Teilschritte
+  aufgegliedert werden:
+
+		0.Serielle Schnittstelle zum Controller vorbereiten
+		1.Speicherbereiche und Register des zu simulierenden
+		  Prozessors (oder Platine !) durch Schreib- und
+		  Lesefunktionen in den Simulator abbilden.
+		2.Segmentarten des Assemblers abbilden.
+		3.Steuerfunktionen fr den Programmlauf auf der Controller-
+		  Platine erzeugen.
+		4.Inhalt des 'Register'-Fensters im Simulator festlegen
+
+  Zwei Funktionen die beliebig in Ausdrcken verwendet werden k”nnen
+  sind speziell fr den Monitorbetrieb implementiert worden.
+  Es handelt sich um die Funktionen:
+					SI(Arg)   "Serial-In"
+					SO(Arg)   "Serial-Out"
+
+  Diese beiden Funktionen dienen ausschlieálich der Kommunikation
+  mittels der seriellen Schnittstelle, die natrlich vorher richtig
+  Initialisiert werden muá (-> Abschnitt 0).
+  Die Funktion SO(Arg) dient zur Ausgabe von Bytes ber die serielle
+  Schnittstelle an den Controller. Das Argument wird dabei immer als
+  ein Byte interpretiert.
+  Die Funktion SI(Arg) fhrt einen Lesecyclus an der seriellen Schnittstelle
+  aus und liefert einen `long int`-Wert zurck. Das Argument der Funktion
+  SI hat spezielle Bedeutungen:
+
+    Arg     Bedeutung
+
+    < 0     Ein negatives ganzzahliges Argument lieát abs(Arg) Zeichen
+	    von der seriellen Schnittstelle ein.
+    = 0     Null als Argument lieát so viele Zeichen von der
+	    seriellen Schnittstelle bis keine Zeichen mehr kommen
+	    (k”nnen auch Null Zeichen sein !)
+    = 1     Lieát eine HEX-Zahl von der seriellen Schnittstelle ein
+	    (Die Zahl muá aus fr HEX-Zahlen zul„ssigen ASCII-Zeichen
+	    bestehen !)
+    > 1     reserviert fr zuknftige Erweiterungen (Zahlenformate)
+
+
+  ACHTUNG:
+  --------
+  Alle Beispiele im folgenden beziehen sich auf eine Controllerplatine
+  mit dem 80C552 als CPU, dem Monitorprogramm `DL26.ASM` (auf der
+  Controllerseite) und der Monitortabelle `Tabellen\80C552.TAM`. Als
+  Verbindung zwischen Controllerplatine und PC dienen die Leitungen
+  MASSE, TXD und RXD.
+
+
+  0.Serielle Schnittstelle zum Controller vorbereiten
+  ===================================================
+  Fr den Monitormodus von HSIM muá grunds„tzlich immer eine serielle
+  Verbindung zu einem funktionf„higem Controllerboard hardwarem„áig
+  vorhanden sein.
+  Um diese Verbindung Softwareseitig aufzubauen muá HSIM die Schnittstelle
+  am Computer wissen, an der der Controller angeschlossen ist, und
+  mit welcher Baudrate (šbertragungsgeschwindigkeit) dieser Controller
+  erwartet, daá man mit ihm in Verbindung tritt.
+  Diese Informationen werden HSIM in der Tabelle ??.TAM mit der folgenden
+  Zeile mitgeteilt:
+
+     S<COM> <Baudrate> [<IRQ> [<Parit„t> [<Bits> [<Stopbits>]]]]
+	\ 	   \ 	   \ 	   \ 	     \        \
+	 \ 	    \ 	    \ 	    \ 	      \        0,1,2
+	  \ 	     \ 	     \ 	     \ 	       7,8
+	   \ 	      \       \       \
+	    \ 	       \       \       0=ohne Parit„t,1=mit Parit„t
+	     \ 		\ 	\
+	      \ 	 \ 	 3,4
+	       \ 	  \
+		\ 	   ...38400 (Teilweise auch h”her !)
+		 \
+		  1=COM1,2=COM2,3=COM3,4=COM4
+
+  Die ersten beiden Parameter in dieser Zeile sind obligatorisch, alle
+  weiteren  Parameter sind optional, mssen aber in der angegebenen
+  Reihenfolge auftauchen.
+  Standardinitialisierung fr eine Verbindung ber COM1 mit einer
+  Geschwindigkeit von 9600 Baud w„re:
+
+     S1 9600
+
+  Im Normalfall ist mit dieser einen Zeile bereits alles erledigt.
+  Lediglich fr den Fall, daá die Geschwindigkeit oder andere
+  Parameter auf der Controllerseite ge„ndert werden sollen, sind
+  noch weitere 'S' und 's'-Zeilen n”tig.
+  Voraussetzung ist natrlich, daá das Betriebssystem des Controllers
+  dies untersttzt !
+  In diesem Fall kann mit einer Zeile
+
+     s<Expression die den Controller umschaltet>
+
+  der Controller mit entsrechenden Befehlen ber die Serielle Schnittstelle
+  in den gewnschten Zustand gebracht werden. Dabei muá beachtet werden,
+  daá der Controller direkt nach der Umschaltung mit den ge„nderten
+  Parametern arbeitet und jetzt Beispielsweise mit einer anderen
+  Geschwindigkeit sendet und empf„ngt. Die Verbindung zum Controller ist
+  damit so lange unterbrochen, bis auch auf der Computerseite (PC)
+  die n”tigen nderungen bei der seriellen Schnittstelle durch gefhrt
+  worden sind. In der Regel muá deshalb direkt nach einer 's'-Zeile eine
+  'S'-Zeile mit den neuen, nach der Umstellung gltigen Parametern
+  vorhanden sein.
+  Beispiel einer Baudraten„nderung von 9600 Baud auf 38400 Baud aus der
+  Tabelle DL29.TAM (->CPU:80C552 mit Betriebssystem DL29.ASM):
+
+    ; Serielle Schnittstelle konfigurieren
+    ; ------------------------------------
+    ;COM Baudrate IRQ Parity Datenbits Stopbits
+    ; 1	 9600	  -1   0       8	 1 (=Default)
+    ; zun„chst mit 9600 Baud starten
+    S1 9600
+
+    ; Wechsel auf 38400 Baud
+    ; ----------------------
+    sSO('F')úSO(08Dh)úSO(0FEh)
+    S1 38400
+
+
+
+
+  1.Speicherbereiche und Register abbilden
+  ========================================
+  Fr den Simulator wurden alle Segmente im PC nachgebildet - Fr den
+  Monitor gengt es wenn fr alle Segmente eine Schreib- und eine Lese-
+  funktion angelegt wird, die es dem Monitor erm”glicht alle Inhalte zu
+  lesen und zu setzen.
+  Aus diesem Grunde gibt es speziell fr den Monitorbetrieb eine zus„tzliche
+  Speichersegmentdefinition:
+
+    m@B0 SAD(IN)úSO('N')úSI(-1) SAD(5@0)úSO('S')úSO(IN)	  ; Code-Speicher
+     \\\\\____________________/ \_____________________/
+      \\\\    Lesefunktion	   Schreibfunktion
+       \\\\_
+	\\\ Segmentnummer
+	 \\\_
+	  \\ (`B`=Byte/`W`=Wort/`D`=Doppelwort)
+	   \\_
+	    \ Kennung fr Segmentdefinition durch Lese- und Schreibfunktion
+	     \
+	      Kennung fr Speichersegmentdefinition (Memory)
+
+    Zus„tzlich ben”tigte Funktionen:
+       fSAD SO('P')úSO(IN>>8)úSO(IN)
+       fSA 5@0=IN
+
+
+  Diese Zeile teilt dem Monitor mit, wie er auf den Codespeicher zugreifen
+  kann. Beim Lesen muá zun„chst mittels der Funktion SAD die Adresse
+  gesetzt werden an der gelesen werden soll. Dann wird der eigentliche
+  Lesebefehl (Hier das Zeichen `N') gesendet. Abschlieáend muá dann noch
+  das Zeichen welches den Inhalt der entsprechenden Speicherzelle darstellt
+  gelesen werden. Das Ergebnis des letzten Teilausdruckes ist gleichzeitig
+  der Rckmeldewert an bergeordnete Funktionen. Zum Lesen einer Speicher-
+  stelle wird nur ein Argument (die Adresse) ben”tigt und diese wird
+  direkt als Argument bergeben.
+  Beim Schreiben werden zwei Argumente ben”tigt. Da in HSIM nur einfache
+  Funktionen mit einem Argument implementiert sind, muá beim Schreiben
+  ein spezieller Mechanismus angewendet werden. Wenn HSIM auf eine
+  Speicherstelle schreiben will, die sich im Controller befindet, so
+  wird immer zun„chst die Funktion SA mit der gewnschten Adresse als
+  Argument aufgerufen. Anschlieáend wird dann erst die eigentliche
+  Schreibfunktion mit dem Wert als Argument aufgerufen.
+  Im obigen Beispiel wird das Argument der Funktion SA an der Adresse
+  0 im Segment 5 zwischengespeichert, so daá sich beim anschlieáenden
+  Aufruf der eigentlichen Schreibfunktion an dieser Stelle die Adresse
+  zu finden ist. Die Funktion SAD bermittelt die momentan gltige
+  Adresse (unter 5@0) an den Controller. Die Funktion SAD ist nicht
+  unbedingt n”tig, erh”ht aber die Lesbarkeit der Monitortabelle.
+
+  Bei Ausdrcken innerhalb des Monitors kann nun genau wie beim
+  Simulator mit 0@Adresse auf den Codespeicher zugegriffen werden. Der
+  Zugriff ist also identisch, unabh„ngig davon, ob sich das Segment im PC
+  oder im Controller befindet.
+
+  Genau wie beim Simulator ist das Segment mit der Nummer 0 fr das
+  Codesegment reserviert. Alle anderen Nummern k”nnen beliebig vergeben
+  werden.
+
+
+
+  2.Abbilden der Segmentarten des Assemblers
+  ==========================================
+  Analog wie bei der Erstellung einer Simulatortabelle !!!
+
+
+
+  3.Steuerfunktionen fr den Programmlauf
+  =======================================
+
+  Insgeamt gibt es 10 Steuerfunktionen fr den Programmablauf:
+
+		    START(0)
+		    DOSTEP(0)
+		    DOCALL(0)
+		    STOP(0)
+
+		    DORUN(0)
+		    CHKBRK(0)
+		    DOBRK(0)
+
+		    SETBRK(Arg)
+		    DELBRK(Arg)
+		    DELALL(0)
+
+  Diesen 10 Funktionen sind spezifische Aufgaben zugeordnet. Sie mssen
+  in der Tabelle angelegt werden, obwohl sie in der Tabelle selbst
+  normalerweise nicht verwendet werden. Diese Funktionen werden vom
+  Monitor eigenst„ndig zu bestimmten Zeiten aufgerufen und abgearbeitet.
+
+  START: Die Startfunktion wird direkt nach dem Download des Programms
+	 aufgerufen und hat die Aufgabe den Prozessor (Monitor) in den
+	 Single-Step-Betrieb zu bringen und den Programmz„hler an den
+	 Anfang des Anwenderprogramms zu setzen. Nach dem einmaligen
+	 ausfhren dieser Funktion muá es m”glich sein in beliebiger
+	 Reihenfolge Werte im Controller zu lesen, zu schreiben und
+	 die Funktionen DOSTEP und DOCALL aufzurufen.
+
+  DOSTEP: Beim Aufrufen der Funktion DOSTEP soll der Prozessor jeweils
+	  genau einen Maschinenbefehl ausfhren.
+
+  DOCALL: Beim Aufrufen der Funktion DOCALL soll der Prozessor jeweils
+	  genau einen Maschinenbefehl ausfhren. Unterprogrammaufrufe
+	  sollen aber in einem Schritt vollst„ndig ausgefhrt werden.
+	  Wenn der Monitor im Controller diese Funktion nicht zur
+	  Verfgung stellt, dann sollte die Funktion DOCALL den selben
+	  Inhalt wie die Funktion DOSTEP besitzen, da die vier
+	  Steuerfunktionen in jedem Fall vorhanden sein mssen.
+
+  STOP: Diese Funktion wird beim Beenden von HSIM einmal aufgerufen
+	und sollte dazu verwendet werden den Prozessor in einen
+	definierten Endzustand zu versetzen. Ausgehend von diesem
+	Endzustand sollte wieder ein Download mit anschlieáender
+	Start-Funktion m”glich sein.
+
+  DORUN: Die Funktion 'DORUN' sollte die Abarbeitung des Anwenderprogramms
+	 in Echtzeit starten. Um dem Monitor im PC mitzuteilen daá diese
+	 Funktion verfgbar ist, sollte der Returnwert ungleich Null sein.
+	 Nach dem Ausfhren der Funktion 'DORUN' fhrt der Monitor im PC
+	 st„ndigt die Funktion 'CHKBRK' aus, um festzustellen ob das
+	 Anwenderprogramm noch l„uft. Das setzt natrlich voraus, daá
+	 der Controller neben dem Anwenderprogramm daá er jetzt ausfhrt
+	 auch noch die Monitorroutinen bedient !
+	 Die Funktion 'DORUN' zeigt unterschiedliches Verhalten je nachdem
+	 wie der Monitor im Controller programmiert ist. Bei sehr einfachen
+	 Monitorprogrammen im Controller die nicht ber einen Hardware-
+	 interrupt aufgerufen werden, kann diese Funktion nur einmal
+	 aufgerufen werden und die Verbindung zur Controllerplatine ist dann
+	 unterbrochen, weil das Monitorprogramm im Controller nicht mehr
+	 ausgefhrt wird (Jetzt wird das Anwenderprogramm ausgefhrt !).
+	 Es gibt in diesem Fall nur drei M”glichkeiten wieder aus diesem
+	 Zustand herauszukommen: - Anwenderprogramm ist keine Endlosschleife
+				   und springt am Ende selbst„ndig wieder
+				   in den Monitor zurck.
+				 - Es sind Breakpoints im Monitor des
+				   Controllers m”glich und die Programm-
+				   ausfhrung trifft auf einen solchen !
+				 - Beenden von HSIM und Rcksetzen
+				   der Controllerplatine
+	 Wenn im Controller ein Monitorprogramm l„uft, welches ber einen
+	 Hardwareinterrupt aktiviert wird, also auch im Hintergrund laufen
+	 kann, so gibt es zus„tzlich noch die M”glichkeit das Anwender-
+	 programm per Hand anzuhalten und zwar durch Bet„tigen der Taste F5
+	 am PC, was letztendlich das Ausfhren der Funktion 'DOBRK' bedeutet.
+
+  CHKBRK: Die Funktion 'CHKBRK' muá eine 1 liefern wenn der Monitor im
+	  Controller im Singlestep-Betrieb ist, also das Hauptprogramm steht.
+	  Durch die Funktion 'DORUN' muá dies (zumindest kurzzeitig)
+	  ge„ndert werden k”nnen !
+
+  DOBRK: Die Funktion 'DOBRK' sollte den Monitor nach dem Ausfhren einer
+	 'DORUN' Funktion wieder in den Singlestep-Betrieb zurckschalten
+	 k”nnen. (-> 'DORUN'-Funktion)
+	 Wenn diese Funktion implementiert ist, sollte sie als Returnwert
+	 einen Wert ungleich Null liefern !
+
+  SETBRK: Die Funktion 'SETBRK' wird vom Monitor mit der Breakpointadresse
+	  an der der Halt erfolgen soll als Argument aufgerufen. Der
+	  Returnwert teilt dem Monitor im PC mit ob der Monitor im Controller
+	  berhaupt eine eigene Breakpointverwaltung bereitstellt. Wenn
+	  der Monitor im Controller eine eigene Breakpointverwaltung besitzt,
+	  so muá entweder die Funktion 'DELBRK' oder die Funktion 'DELALL'
+	  zus„tzlich implementiert werden, damit der Monitor im PC einmal
+	  gesetzte Breakpoints auch wieder l”schen kann.
+	  Eine eigene Breakpointverwaltung im Controller erh”ht die
+	  Ausfhrungsgeschwindigkeit der Programme im 'RUN'-Modus sehr
+	  stark. Bei geschickter Programmierung des Talkers im Controller
+	  wird praktisch eine Echtzeitausfhrung erreicht.
+	  Wenn im Controller keine eigene Breakpointverwaltung vor-
+	  handen ist, so wird beim Starten des Programms mit DORUN (=F5)
+	  keine quasi Echtzeitausfhrung erreicht wenn Breakpoints
+	  in HSIM gesetzt sind. Es l„uft im Hintergrund eine (m”glichst
+	  schnelle) Einzelschrittabarbeitung. Anders ist es wenn in HSIM
+	  keine Breakpoints gesetzt sind. In diesem Fall l„uát das Programm
+	  quasi in Echtzeit ab.
+
+  DELBRK: Die Funktion 'DELBRK' wird vom Monitor mit der Breakpointadresse
+	  die gel”scht werden soll als Argument aufgerufen. Der Returnwert
+	  zeigt dem Monitor an ab diese Einzell”schung fr Breakpoints
+	  implementiert ist. Wenn die Einzell”schung ber 'DELBRK' nicht
+	  implementiert ist, so muá unbedingt 'DELALL' fr eine
+	  Gesamtl”schung aller Breakpoints implementiert sein.
+
+  DELALL: Die Funktion 'DELALL' muá so implementiert sein, daá ihre
+	  Ausfhrung alle Breakpoints im Controller l”scht.
+
+
+
+  4.Inhalt des 'Register'-Fensters im Monitor festlegen
+  =======================================================
+  Analog wie bei der Erstellung einer Simulatortabelle !!!
+
+
+
+  Beispielsitzung im Monitorbetrieb
+  =================================
+  Bei vollst„ndiger Implementierung l„uft eine Monitorsitzung wie folgt ab.
+  Zun„chst wird HSIM mit der Befehlszeile
+					     HSIM sorce.sim /Monitor
+  gestartet.
+  Bei diesem Startvorgang wird zun„chst das gesamte Maschinenprogramm
+  mittels Schreibzugriffe auf das Segment 0 'Downgeloaded', das heiát in
+  das Mikrocontrollerboard geschrieben. Im Anschluá daran wird durch Aufruf
+  der Funktion START() der Controller veranlaát an den Anfang des Anwender-
+  programmes zu springen und dort im Singlestepmodus zu verharren. Mit
+  anderen Worten es wird ein bestimmter Anfangszustand eingenommen.
+  Bevor HSIM auf Benutzereingaben wartet, werden alle Register und Variablen,
+  die am Bildschirm dargestellt werden sollen, vom Controller gelesen.
+  Dazu geh”rt auch der Programmz„hler. Mit seiner Hilfe wird der zugeh”rige
+  Sourcecode gesucht und dargestellt.
+  Die Initialisierung ist jetzt abgeschlossen und HSIM wartet nun auf
+  Benutzereingaben.
+  Wenn man jetzt durch Drcken der Taste F8 einen Einzelschritt ausfhren
+  will, so reagiert HSIM darauf mit dem ausfhren der Funktion DOSTEP().
+  Danach werden alle darzustellenden Werte neu gelesen und der Programmz„hler
+  (Sourcefenster) aktualisiert.
+  Beim Drcken der Taste F10 l„uft intern genau das gleiche ab, nur daá
+  jetzt nicht die Funktion DOSTEP() sondern DOCALL() aufgerufen.
+  Wenn man die schnelle Abarbeitung des Programms durch Drcken der
+  Taste F5 startet, so gibt es unterschiedliche Reaktionen von HSIM.
+  Je nachdem ob im Controller eine eigene Breakpointverwaltung realisiert
+  ist oder nicht. Im einen Fall wird die Funktion DORUN() ausgefhrt und
+  im anderen wiederholt die Funktion DOSTEP(), so wie es im folgenden
+  Diagramm veranschaulicht ist.
+
+      Breakpointverwaltung
+	im Controller ?    Ja		   st„ndiges Aktualisieren der
+   F5 -----------------------> DORUN() --> gewnschten Fenster und gegebenen-
+       \ 			 /	   falls berprfen ob der Controller
+	\Nein			/Nein	   auf einen Breakpoint gestoáen ist.
+	 \ 		       /
+	  \Ist ein Breakpoint /      St„ndig DOSTEP() Funktionen ausfhren
+	   \ vorhanden ?     /	 Ja  und dabei die gewnschten Fenster
+	    -----------------------> aktualisieren
+
+  Wenn im Controller keine Breakpointverwaltung realisiert ist, so ist man
+  mit dem st„ndigen Ausfhren von DOSTEP() Funktionen sehr weit von einer
+  Echtzeitabarbeitung des Programms entfernt. Um auch ohne Breakpointver-
+  waltung im Controller eine nahezu Echtzeitverarbeitung starten zu k”nnen,
+  wird die Funktion DORUN() auch dann ausgefhrt wenn kein Breakpoint
+  definiert ist.
+  Wenn der Runmodus durch st„ndiges Ausfhren von DOSTEP() Funktionen
+  realisiert  wird, so wird beim wiederholten Drcken der Taste F5 das
+  Ausfhren dieser Funktion einfach eingestellt und die Ausfhrung ist
+  damit gestoppt.
+  Ein durch Ausfhren der DORUN() Funktion gestarteter Runmodus wird durch
+  Ausfhren der DOBRK() Funktion beendet.
+  Am Ende jeder Monitorsitzung wird zum Abschluá die Funktion STOP()
+  ausgefhrt.
+
+
+
+16. Historie des Programms
+**************************
+
+  Version 0.9: - Abholen der Ausdrcke im Watch-Fenster erst nach dem
+		 Starten des Programms
+	       - Segmentabbildungen jetzt ber normale Funktionen
+  Version 1.0: - Overlays fr einzelne Prozessoren
+	       - Stimulus-File implementiert
+	       - Andere Bildschirmaufl”sungen (EGA/VGA)
+	       - Status-Editor eingebaut
+	       - Interfacem”glichkeiten eingebaut (Multiprozessorsimulationen
+		 sind jetzt erst sinnvoll !)
+  Version 1.1: - Umschalten der Baudrate in der Tabelle (Monitor)
+	       - Vereinfachter Zugriff auf CPU-intern Variablen und
+		 Register durch 'd'-Zeile in der Tabelle
+               - Nach Hinweis Fehler bei Paritaet und Uebertrag beseitigt
+	       - Scriptfiles (=Tastaturmakros) implementiert
+	       - Bausteine jetzt m”glich

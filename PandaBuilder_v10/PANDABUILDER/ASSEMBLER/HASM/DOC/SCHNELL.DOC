@@ -1,0 +1,149 @@
+	  HASM Schnell-öberblick    Dipl.-Ing. H.P. Hohe 11.7.93
+	  ======================
+
+KOMMANDO-Zeile: HASM src_file [/Option1] [/Option2] ...
+Optionen: /Ttabelle[.tab]    Verbindung zur gewÅnschten Assemblertabelle
+	  /Hfile[.hex]	     GewÅnschter Name der Intel-Hex-Datei
+	  /Czahl	     GewÅnschte Code-Breite im Listing
+	  /Fzahl	     Maximale Anzahl der anzuzeigenden Fehler
+	  /Symbole	     FÅgt am Ende des Listings eine Symboltabelle an
+	  /NOCode	     UnterdrÅckt Code und Adresse im Listing
+	  /EMakros	     Makroaufrufe im Listing expandieren
+	  /NOSegments	     Keine Segment-Tabelle im Listing erzeugen
+	  /OBJ		     Nicht Linken - Nur Objektfile erzeugen
+	  /LINK		     Angegebenen Objektfiles Linken zum Hexfile
+	  /P[Format]	     HEX-File-Format: INH(=default),INHX8M,INHX32
+	  /Q[uiet]	     Keine Punkte mehr beim Assemblieren
+
+Preprozessor-Direktiven:
+  #INCLUDE <filename>	     Importiert <filename> als Quell-Code
+  #DEFINE  <label> [<expr>]  Definiert ein Label
+  #IFDEF   <label>	     Assemblierung des Folgenden wenn <label> DEFINE'd
+  #IFNDEF  <label>	     Assemblierung des Folgenden wenn <label> nicht DEFINE'd
+  #IF	   <expr>	     Assemblierung des Folgenden wenn <expr> nicht 0
+  #ELSE			     Block der ersatzweise Assembliert werden soll
+  #ENDIF		     Ende der Bedingten Assemblierung
+  #ASSEMBLER <filename>      Legt die Asseblertabelle (und damit die CPU) fest.
+  #SYMLIST		     FÅgt am Ende des Listings eine Syboltabelle an.
+  #[NO]EXPANDMAKROS	     Makroaufrufe im Listing expandieren oder nicht
+  #[NO]LISTMAKROS	     Makrodefinitionen ins Listing oder nicht
+  #[NO]LIST		     Quelltext ins Listing oder nicht
+
+Assembler-Direktiven:
+Name  SEGMENT <Seg_Art>	    Aktiviert den Code/Daten-Zeiger eines Segments
+      ?SEG    [AT <expr>]   Aktiviert den Code/Daten-Zeiger eines Segments
+      ?SEG    Name	    Aktiviert den Code/Daten-Zeiger eines Segments
+      ORG     <expr>	    Setzt den aktiven Code/Daten-Zeiger
+      DB      <string>	    Reserviert & initialisiert mehrere Bytes
+Label EQU     <expr>	    Ordnet einem Label einen Wert zu
+Label SET     <expr>	    Ordnet einem Label einen Wert zu
+      DS      <expr>	    Reserviert Speichereinheiten ohne Initialisierung
+Name  MACRO   <args>	    Anfang einer Makrodefinition
+      ENDMACRO		    Ende einer Makrodefinition
+      TABELLE <var>,<fExpr>,... Tabellenerzeugung (Argumente -> Hasm.DOC)
+      LOCAL		    Anfang einer Variablenabgrenzung
+      ENDLOCAL		    Ende einer Variablenabgrenzung
+      PUBLIC  <var>[,<var>[,..]] Scope Lokaler Variablen vergrî·ern
+      EXTERN  <var>[,<var>[,..]] Verbindung zu anderem Objektmodul
+      OBJECT  <obj_file>    Einbindes eines Objektmoduls in ein Programm
+      LIBRARY <lib_file>    Hinweis auf eine Library
+
+
+Integerzahlen:
+--------------
+	  <digits><suffix>		  (default)
+	     \        \
+	      \        \_ Suffix  b/B  o/O  d/D/-  h/H
+	       \ 	  ----------------------------
+		\ 	  Basis    2	8    10    16
+		 \
+		  \_ digits = 0-9,a-f,A-F
+
+       oder
+
+	  '<Zeichen>'
+	      \
+	       \
+		 Bis zu 4 Zeichen aus: a-z,A-Z,0-9,îÑÅôéö
+				       #·@+-*/!$%&()=?^¯[]{},.;:_
+		 ESC-Sequenzen:        ' = \'
+				       " = \"
+				       \ = \\
+				 Klingel = \a  (= 7d)
+			       Backspace = \b  (= 8d)
+			      Neue Seite = \f  (= 12d)
+			      Neue Zeile = \n  (= 10d)
+			    Zeilenanfang = \r  (= 13d)
+		     Horzontal Tabulator = \t  (= 9d)
+		      Vertikal Tabulator = \v  (= 11d)
+		    (beliebiges Zeichen) = \xx (xx = 2-stellige Hexzahl)
+
+Floatzahlen:
+------------	[-]<digits>[.][<digits>][e/E[-]<digits>]
+
+Zeichenketten:
+--------------
+
+       "<Zeichen>"
+	      \
+	       \
+		 Bis zu 128 Zeichen aus: a-z,A-Z,0-9,îÑÅôéö
+					 #·@+-*/!$%&()=?^¯[]{},.;:_
+		 ESC-Sequenzen:        ' = \'
+				       " = \"
+				       \ = \\
+				 Klingel = \a  (= 7d)
+			       Backspace = \b  (= 8d)
+			      Neue Seite = \f  (= 12d)
+			      Neue Zeile = \n  (= 10d)
+			    Zeilenanfang = \r  (= 13d)
+		     Horzontal Tabulator = \t  (= 9d)
+		      Vertikal Tabulator = \v  (= 11d)
+		    (beliebiges Zeichen) = \xx (xx = 2-stellige Hexzahl)
+
+Operatoren:
+-----------
+	    Operator	 PrioritÑt	Beschreibung
+		      Int Float String
+
+	    -	       9    9	  -	Vorzeichen
+	    ~	       9    9	  -	1-er Komplement
+	    ^	       -    8	  -	Potenzieren
+	    *	       7    7	  -	Multiplizieren
+	    /	       7    7	  -	Dividieren
+	    %	       7    -	  -	Modulo (Rest nach Division)
+	    -	       6    6	  -	Subtrahieren
+	    +	       6    6	 (6)	Addieren
+	    <<	       5    -	  -	links schieben
+	    >>	       5    -	  -	rechts schieben
+	    <	       4    4	  -	Kleiner als
+	    <=	       4    4	  -	Kleiner oder gleich
+	    >	       4    4	  -	Grî·er als
+	    >=	       4    4	  -	Grî·er oder gleich
+	    ==	       4    4	  -	Gleich
+	    !=	       4    4	  -	Nicht gleich
+	    =	       4    4	  -	Gleich
+	    &	       3    -	  -	Bitweise 'UND'
+	    ^	       3    -	  -	Bitweise 'EXOR'
+	    |	       3    -	  -	Bitweise 'ODER'
+
+Funktionen:
+-----------
+	    int()	 \
+	    float()	  \ Umwandlung zwischen den verschiedenen
+	    string()	  /	Datentypen
+
+       Mathematische Funktionen:
+	    abs(),sin(),cos(),tan(),asin(),acos(),atan()
+	    sinh(),cosh(),tanh(),exp(),log(),log10()
+
+
+
+
+Anmerkungen:
+------------
+- Freie Operatoren kînnen in der Tabelle fÅr die jeweilige CPU definiert werden.
+- Vergleichende Operatoren liefern 0 fÅr falsch und -1 fÅr wahr.
+- Kommentar kann in jeder Zeile angefÅgt werden und mu· mit ';' beginnen.
+- Mit Ausnahme von Makronamen und Maschinenbefehlen (beides Mnemonics !)
+    wird zwischen Gro·-und Kleinschreibung unterschieden !

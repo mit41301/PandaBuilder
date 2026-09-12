@@ -1,0 +1,1 @@
+java romwriter %1 %2 8 6
