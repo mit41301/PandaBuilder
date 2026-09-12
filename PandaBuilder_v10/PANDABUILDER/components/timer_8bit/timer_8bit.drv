@@ -1,0 +1,61 @@
+;**********************************
+;*** Driver File for timer_8bit ***
+;**********************************
+
+#NOLIST
+
+;*** Start Timer ***
+;Starts the timer (sets RUN in CFG)
+._START				MACRO
+						REG_SETB ._CFG, #._RUN
+						ENDMACRO
+			
+;*** Stop Timer ***
+;Stops the timer (clears RUN in CFG)
+._STOP				MACRO
+						REG_CLRB	._CFG, #._RUN
+						ENDMACRO
+			
+;*** Clear Interrupt ***
+;Clears the interrupt (clears INT)
+._CLRINT				MACRO
+						REG_SET	._INT, #0
+						ENDMACRO 
+
+;*** Initialize for Continuous Interrupt ***
+;Initializes the timer for continuous interrupt generation.
+;General IE of the cpu must be set by user software.
+;Parameters:	Name			Description									Imm / Var	
+;					INTERVALL	Interrupt intervall in ticks 			Y	 / N
+._INIT_CONTINT 	MACRO	#INTERVALL
+						REG_SET	._TMR,	#(INTERVALL-1)
+						REG_SET	._RLD,	#(INTERVALL-1)
+						REG_SET	._CFG,	#(._RUN | ._RELOAD | ._INTON)
+						ENDMACRO
+			
+;*** Initialize for Wait for n Ticks ***
+;Initializes the timer for the usage of the WAITNTICKS Macro
+._INIT_WAITNTICKS	MACRO
+						REG_SET	._CFG,	#(._RUN)
+						ENDMACRO
+			
+;*** Wait for n Ticks ***
+;Waits for n ticks. This Macro can replace delay loops.
+;Parameters:	Name			Description									Imm / Var
+;					N				Delay time in ticks						Y 	 / Y
+._WAITNTICKS		MACRO	#N
+						REG_SET	._TMR,	#N
+						LDA		._TMR
+						SKEQ		#0
+						JMP		@-2
+						ENDMACRO
+			
+._WAITNTICKS		MACRO	N
+						REG_SET	._TMR,	N
+						LDA		._TMR
+						SKEQ		#0
+						JMP		@-2
+						ENDMACRO			
+			
+ENDDRV
+

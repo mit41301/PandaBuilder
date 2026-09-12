@@ -1,0 +1,16 @@
+;***********************************
+;*** Driver File for lcd_simple ***
+;***********************************
+
+#NOLIST
+
+;*** Wait Busy ***				
+._WAIT_BUSY 	MACRO		
+					LDA	._STATE
+					AND	#._BUSY
+					SKEQ	#0
+					JMP	@-3
+        			ENDMACRO
+
+ENDDRV
+

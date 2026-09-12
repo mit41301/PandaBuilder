@@ -1,0 +1,39 @@
+;************************************
+;*** Driver File for rs232_simple ***
+;************************************
+
+#NOLIST
+
+;*** Wait and Send ***
+;Waits until not busy and then sends the data
+;Parameters:	Name			Description									Imm / Var	
+;					DATA			Data to Send 								Y	 / Y
+._WAIT_SND			MACRO	DATA
+						LDA	._CFG
+						AND	#._BUSY
+						SKEQ	#0
+						JMP	@-3
+						REG_SET	._DAT, DATA
+						ENDMACRO
+						
+._WAIT_SND			MACRO	#DATA
+						LDA	._CFG
+						AND	#._BUSY
+						SKEQ	#0
+						JMP	@-3
+						REG_SET	._DAT, #DATA
+						ENDMACRO
+			
+;*** Wait and Receive ***
+;Waits until data is received and saves it into a variable
+;Parameters:	Name			Description									Imm / Var	
+;					VAR			Variable to save received data in	N	 / Y
+._WAIT_REC			MACRO	VAR
+						LDA	._INT
+						AND	#._REC
+						SKNEQ	#0
+						JMP	@-3
+						REG_SET	VAR, ._DAT
+						ENDMACRO			
+ENDDRV
+
